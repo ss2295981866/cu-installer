@@ -122,6 +122,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle bundle) {
+        installCrashHandler();
         Theme.init(this);
         super.onCreate(bundle);
         this.sp = Core.prefs(this);
@@ -132,7 +133,11 @@ public class MainActivity extends Activity {
         } catch (Throwable th) {
         }
         if (this.sp.getBoolean("setup_done", false)) {
-            showMain(0);
+            try {
+                showMain(0);
+            } catch (Throwable th) {
+                crashPage(th);
+            }
         } else {
             showHome();
         }
@@ -679,6 +684,64 @@ public class MainActivity extends Activity {
             textView.setText(z ? "●" : "○");
             textView.setTextColor(z ? Theme.accent() : Ui.SUB);
             i2++;
+        }
+    }
+
+    private void installCrashHandler() {
+        final Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable th) {
+                try {
+                    File dir = new File("/storage/emulated/0/Download/cu-logs");
+                    dir.mkdirs();
+                    String ts = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(new java.util.Date());
+                    File f = new File(dir, "crash-" + ts + ".txt");
+                    java.io.StringWriter sw = new java.io.StringWriter();
+                    th.printStackTrace(new java.io.PrintWriter(sw));
+                    FileOutputStream fos = new FileOutputStream(f);
+                    String head = "app: " + getPackageName() + "\n"
+                            + "device: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n"
+                            + "android: " + android.os.Build.VERSION.RELEASE + " (SDK " + android.os.Build.VERSION.SDK_INT + ")\n"
+                            + "thread: " + thread.getName() + "\n\n";
+                    fos.write((head + sw.toString()).getBytes("UTF-8"));
+                    fos.close();
+                } catch (Throwable ignored) {
+                }
+                if (prev != null) {
+                    prev.uncaughtException(thread, th);
+                }
+            }
+        });
+    }
+
+    private void crashPage(Throwable th) {
+        try {
+            LinearLayout col = Ui.column(this);
+            col.addView(header("出 错"));
+            LinearLayout card = Ui.card(this);
+            card.addView(Ui.cardHeader(this, "启动时遇到问题", null));
+            card.addView(Ui.desc(this, String.valueOf(th) + "\n\n已记录到 Download/cu-logs/，可反馈给开发者。"));
+            col.addView(card);
+            Button retry = Ui.btn(this, "重试", Theme.accentDark());
+            retry.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    recreate();
+                }
+            });
+            col.addView(retry);
+            Button skip = Ui.btn(this, "重置向导", Ui.CARD2);
+            skip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    sp.edit().clear().apply();
+                    recreate();
+                }
+            });
+            col.addView(skip);
+            setPage(Ui.scroll(this, col));
+        } catch (Throwable ignored) {
         }
     }
 
@@ -2176,6 +2239,15 @@ public class MainActivity extends Activity {
     }
 
     public void chooseWinlator(int i) {
+        try {
+            chooseWinlator0(i);
+        } catch (Throwable th) {
+            Log.e("CU", "chooseWinlator failed", th);
+            crashPage(th);
+        }
+    }
+
+    private void chooseWinlator0(int i) {
         String[] strArr;
         String str;
         if (installedPkg(i) != null) {
