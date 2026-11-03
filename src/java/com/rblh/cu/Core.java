@@ -434,13 +434,17 @@ public class Core {
                     }
                 }
                 mod.path = file;
-                arrayList.add(mod);
+                if (mod.name != null) {
+                    arrayList.add(mod);
+                }
             }
         }
         Collections.sort(arrayList, new Comparator<Mod>() {
             @Override
             public int compare(Mod mod2, Mod mod3) {
-                return mod2.name.compareToIgnoreCase(mod3.name);
+                String name2 = mod2.name == null ? "" : mod2.name;
+                String name3 = mod3.name == null ? "" : mod3.name;
+                return name2.compareToIgnoreCase(name3);
             }
         });
         return arrayList;
