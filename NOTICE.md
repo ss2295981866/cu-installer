@@ -1,0 +1,11 @@
+# 第三方组件与声明
+
+- **BepInEx**：`base/assets/bepinex.zip` 为 BepInEx 5.x 的分发副本，遵循 **LGPL-2.1**，
+  版权归 BepInEx 作者所有。仓库仅原样打包，未修改其二进制。
+- **junrar**：`libs/junrar-7.5.5.jar`，RAR 解压库，遵循 **UnRAR License**（见其 jar 内 LICENSE），
+  仅用于解压用户自备的 rar 包。
+- **slf4j-api**：`libs/slf4j-api-1.7.36.jar`，遵循 **MIT**。
+- **图标/资源**：`base/res/` 为原应用的图标资源，版权归原作者 若白令狐 所有。
+- 本项目不包含《Casualties Unknown》游戏本体；游戏需用户自行合法获取。
+- 外观实现参考了公开的 CSS 液态玻璃示例（Gitee `greyd097/yzrt`），仅借鉴视觉效果与参数，
+  未拷贝其代码。

@@ -1,0 +1,7 @@
+build/out/
+build/*.jks
+build/*.keystore
+*.apk
+*.ap_
+*.dex
+.DS_Store
