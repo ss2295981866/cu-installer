@@ -8,6 +8,7 @@
 - 解压进度条；支持 zip / tar.gz / tgz / rar
 - 检查 GitHub Release 更新；导出设备信息与日志
 - 修复切页动画、授权返回刷新、游戏路径检测
+- 修复 BepInEx/plugins 中存在非 dll 文件时启动崩溃的问题
 
 ## v1.4
 
