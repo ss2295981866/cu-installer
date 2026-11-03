@@ -98,8 +98,8 @@ public class Core {
                 arrayList.add(file);
             }
         }
-        Collections.sort(arrayList, new Comparator<File>() { // from class: com.rblh.cu.Core.1
-            @Override // java.util.Comparator
+        Collections.sort(arrayList, new Comparator<File>() {
+            @Override
             public int compare(File file2, File file3) {
                 return file3.getName().compareTo(file2.getName());
             }
@@ -437,8 +437,8 @@ public class Core {
                 arrayList.add(mod);
             }
         }
-        Collections.sort(arrayList, new Comparator<Mod>() { // from class: com.rblh.cu.Core.2
-            @Override // java.util.Comparator
+        Collections.sort(arrayList, new Comparator<Mod>() {
+            @Override
             public int compare(Mod mod2, Mod mod3) {
                 return mod2.name.compareToIgnoreCase(mod3.name);
             }

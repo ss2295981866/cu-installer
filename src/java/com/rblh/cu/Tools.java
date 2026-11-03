@@ -36,8 +36,8 @@ public class Tools {
             LinearLayout linearLayoutCard = Ui.card(context);
             linearLayoutCard.addView(Ui.cardHeader(context, "更新与诊断", "检查新版本、导出运行日志。"));
             linearLayoutCard.addView(Ui.desc(context, "当前版本 " + versionName(context) + "\u3000仓库 " + REPO));
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Tools.1
-                @Override // android.view.View.OnClickListener
+            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Tools.menu((Activity) view.getContext());
                 }
@@ -47,10 +47,9 @@ public class Tools {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void menu(final Activity activity) {
-        Skin.modal(activity, "更新与诊断", new String[]{"检查更新", "导出日志"}, -1, new Skin.Picker() { // from class: com.rblh.cu.Tools.2
-            @Override // com.rblh.cu.Skin.Picker
+        Skin.modal(activity, "更新与诊断", new String[]{"检查更新", "导出日志"}, -1, new Skin.Picker() {
+            @Override
             public void pick(int i) {
                 if (i != 0) {
                     Tools.exportLog(activity);
@@ -69,7 +68,7 @@ public class Tools {
         }
     }
 
-    /* renamed from: com.rblh.cu.Tools$3, reason: invalid class name */
+    
     static class AnonymousClass3 implements Runnable {
         final /* synthetic */ Activity val$a;
         final /* synthetic */ String val$cur;
@@ -79,28 +78,28 @@ public class Tools {
             this.val$a = activity;
         }
 
-        @Override // java.lang.Runnable
+        @Override
         public void run() {
             try {
                 JSONObject jSONObject = new JSONObject(Tools.http(Tools.API));
                 final String strOptString = jSONObject.optString("tag_name", "");
                 final String strOptString2 = jSONObject.optString("body", "");
                 final String strFindApkUrl = Tools.findApkUrl(jSONObject);
-                final double dNum = Tools.num(strOptString);
-                final double dNum2 = Tools.num(this.val$cur);
-                this.val$a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Tools.3.1
-                    @Override // java.lang.Runnable
+                final int[] vLatest = Tools.ver(strOptString);
+                final int[] vCurrent = Tools.ver(this.val$cur);
+                this.val$a.runOnUiThread(new Runnable() {
+                    @Override
                     public void run() {
-                        if (dNum > dNum2 && strFindApkUrl != null) {
+                        if (Tools.cmpVer(vLatest, vCurrent) > 0 && strFindApkUrl != null) {
                             AlertDialog.Builder title = new AlertDialog.Builder(AnonymousClass3.this.val$a).setTitle("发现新版本 " + strOptString);
                             String str = strOptString2;
-                            title.setMessage((str == null || str.trim().length() == 0) ? "是否下载并安装？" : strOptString2).setPositiveButton("下载并安装", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.Tools.3.1.2
-                                @Override // android.content.DialogInterface.OnClickListener
+                            title.setMessage((str == null || str.trim().length() == 0) ? "是否下载并安装？" : strOptString2).setPositiveButton("下载并安装", new DialogInterface.OnClickListener() {
+                                @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     Tools.download(AnonymousClass3.this.val$a, strFindApkUrl);
                                 }
-                            }).setNegativeButton("打开页面", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.Tools.3.1.1
-                                @Override // android.content.DialogInterface.OnClickListener
+                            }).setNegativeButton("打开页面", new DialogInterface.OnClickListener() {
+                                @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     Tools.openUrl(AnonymousClass3.this.val$a, "https://github.com/ss2295981866/cu-installer/releases");
                                 }
@@ -118,8 +117,8 @@ public class Tools {
                 });
             } catch (Throwable th) {
                 Log.e("Tools", "check failed", th);
-                this.val$a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Tools.3.2
-                    @Override // java.lang.Runnable
+                this.val$a.runOnUiThread(new Runnable() {
+                    @Override
                     public void run() {
                         Tools.toast(AnonymousClass3.this.val$a, "检查失败：" + th);
                     }
@@ -132,28 +131,35 @@ public class Tools {
         new Thread(new AnonymousClass3(versionName(activity), activity)).start();
     }
 
-    static double num(String str) {
-        int i;
+    static int[] ver(String str) {
+        int[] v = new int[3];
         try {
             StringBuilder sb = new StringBuilder();
-            for (int i2 = 0; i2 < str.length(); i2++) {
-                char cCharAt = str.charAt(i2);
-                if ((cCharAt >= '0' && cCharAt <= '9') || cCharAt == '.') {
-                    sb.append(cCharAt);
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if ((c >= '0' && c <= '9') || c == '.') {
+                    sb.append(c);
                 }
             }
-            String string = sb.toString();
-            int iIndexOf = string.indexOf(46);
-            if (iIndexOf >= 0 && (i = iIndexOf + 2) < string.length()) {
-                string = string.substring(0, i);
+            String[] parts = sb.toString().split("\\.");
+            for (int i = 0; i < 3 && i < parts.length; i++) {
+                try {
+                    v[i] = Integer.parseInt(parts[i]);
+                } catch (Throwable ignored) {
+                }
             }
-            if (string.length() == 0) {
-                return 0.0d;
-            }
-            return Double.parseDouble(string);
-        } catch (Throwable th) {
-            return 0.0d;
+        } catch (Throwable ignored) {
         }
+        return v;
+    }
+
+    static int cmpVer(int[] a, int[] b) {
+        for (int i = 0; i < 3; i++) {
+            if (a[i] != b[i]) {
+                return a[i] - b[i];
+            }
+        }
+        return 0;
     }
 
     static String findApkUrl(JSONObject jSONObject) {
@@ -194,8 +200,8 @@ public class Tools {
 
     static void download(final Activity activity, final String str) {
         toast(activity, "开始下载更新…");
-        new Thread(new Runnable() { // from class: com.rblh.cu.Tools.4
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(str).openConnection();
@@ -212,9 +218,12 @@ public class Tools {
                         if (i <= 0) {
                             fileOutputStream.close();
                             inputStream.close();
+                            if (file.length() < 50000) {
+                                throw new java.io.IOException("安装包不完整");
+                            }
                             Installer.installApk(activity, file);
-                            activity.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Tools.4.1
-                                @Override // java.lang.Runnable
+                            activity.runOnUiThread(new Runnable() {
+                                @Override
                                 public void run() {
                                     Tools.toast(activity, "已发起安装，请按系统提示操作");
                                 }
@@ -224,8 +233,8 @@ public class Tools {
                         fileOutputStream.write(bArr, 0, i);
                     }
                 } catch (Throwable th) {
-                    activity.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Tools.4.2
-                        @Override // java.lang.Runnable
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
                         public void run() {
                             Tools.toast(activity, "下载失败：" + th);
                         }
@@ -237,8 +246,8 @@ public class Tools {
 
     static void exportLog(final Activity activity) {
         toast(activity, "正在导出日志…");
-        new Thread(new Runnable() { // from class: com.rblh.cu.Tools.5
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 String absolutePath;
                 try {
@@ -303,8 +312,8 @@ public class Tools {
                     absolutePath = null;
                 }
                 final String absolutePathFinal = absolutePath;
-                activity.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Tools.5.1
-                    @Override // java.lang.Runnable
+                activity.runOnUiThread(new Runnable() {
+                    @Override
                     public void run() {
                         String str2;
                         Activity activity2 = activity;

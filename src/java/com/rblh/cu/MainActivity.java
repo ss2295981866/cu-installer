@@ -113,14 +113,14 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override // android.app.Activity
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIncoming(intent);
     }
 
-    @Override // android.app.Activity
+    @Override
     protected void onCreate(Bundle bundle) {
         Theme.init(this);
         super.onCreate(bundle);
@@ -137,8 +137,8 @@ public class MainActivity extends Activity {
             showHome();
         }
         handleIncoming(getIntent());
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.1
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     if (Core.isRootPath()) {
@@ -185,8 +185,8 @@ public class MainActivity extends Activity {
             Ui.animateIn(view);
             Skin.applyLater(this);
         } else {
-            Ui.animateOut(frameLayout2.getChildAt(0), new Runnable() { // from class: com.rblh.cu.MainActivity.2
-                @Override // java.lang.Runnable
+            Ui.animateOut(frameLayout2.getChildAt(0), new Runnable() {
+                @Override
                 public void run() {
                     MainActivity.this.shell.removeAllViews();
                     MainActivity.this.shell.addView(view, new FrameLayout.LayoutParams(-1, -1));
@@ -197,7 +197,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showHome() {
         LinearLayout linearLayoutColumn = Ui.column(this);
         linearLayoutColumn.setGravity(1);
@@ -219,16 +218,16 @@ public class MainActivity extends Activity {
         linearLayoutCard.addView(Ui.desc(this, Obf.intact("本软件完全免费，不包含任何收费内容。\n\n本软件已开源（MIT 许可），可自由修改与分发；游戏本体不随软件提供，请自行合法获取。\n\n本工具仅用于协助安装与配置。\n软件版权归原作者 若白令狐 所有。\n\n若你是付费获得本软件的，请立即退款并举报。") ? "本软件完全免费，不包含任何收费内容。\n\n本软件已开源（MIT 许可），可自由修改与分发；游戏本体不随软件提供，请自行合法获取。\n\n本工具仅用于协助安装与配置。\n软件版权归原作者 若白令狐 所有。\n\n若你是付费获得本软件的，请立即退款并举报。" : "本软件内容校验失败，可能已被篡改。\n请从作者处重新获取。"));
         linearLayoutColumn.addView(linearLayoutCard);
         Button buttonBtn = Ui.btn(this, "作者主页", Ui.CARD2);
-        buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.3
-            @Override // android.view.View.OnClickListener
+        buttonBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.openUrl(Obf.d(MainActivity.URL_AUTHOR_ENC));
             }
         });
         linearLayoutColumn.addView(buttonBtn);
         Button buttonBtn2 = Ui.btn(this, "进入软件", Theme.accentDark());
-        buttonBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.4
-            @Override // android.view.View.OnClickListener
+        buttonBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.showPermission();
             }
@@ -237,7 +236,6 @@ public class MainActivity extends Activity {
         setPage(Ui.scroll(this, linearLayoutColumn));
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showPermission() {
         LinearLayout linearLayoutColumn = Ui.column(this);
         linearLayoutColumn.addView(header("授 权"));
@@ -252,8 +250,8 @@ public class MainActivity extends Activity {
         int iAccentDark = Theme.accentDark();
         if (!zHasAllFiles) {
             Button buttonBtn = Ui.btn(this, "去授权", iAccentDark);
-            buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.5
-                @Override // android.view.View.OnClickListener
+            buttonBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.askAllFiles();
                 }
@@ -264,8 +262,8 @@ public class MainActivity extends Activity {
             iAccentDark = Ui.CARD2;
         }
         Button buttonBtn2 = Ui.btn(this, "下一步", iAccentDark);
-        buttonBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.6
-            @Override // android.view.View.OnClickListener
+        buttonBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 boolean zHasAllFiles2 = MainActivity.this.hasAllFiles();
                 MainActivity mainActivity = MainActivity.this;
@@ -281,7 +279,7 @@ public class MainActivity extends Activity {
         setPage(Ui.scroll(this, linearLayoutColumn));
     }
 
-    @Override // android.app.Activity
+    @Override
     protected void onResume() {
         super.onResume();
         Skin.apply(this);
@@ -295,7 +293,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showInstall() {
         String str;
         LinearLayout linearLayoutColumn = Ui.column(this);
@@ -323,8 +320,8 @@ public class MainActivity extends Activity {
         checkBox2.setText("安装 BepInEx（可选）");
         checkBox2.setChecked(this.wantBep);
         checkBox2.setTextColor(Ui.TEXT);
-        checkBox2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.7
-            @Override // android.view.View.OnClickListener
+        checkBox2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.wantBep = checkBox2.isChecked();
             }
@@ -332,16 +329,16 @@ public class MainActivity extends Activity {
         linearLayoutCard2.addView(checkBox2);
         linearLayoutColumn.addView(linearLayoutCard2);
         Button buttonBtn = Ui.btn(this, "已安装游戏？", Ui.CARD2);
-        buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.8
-            @Override // android.view.View.OnClickListener
+        buttonBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.showGameDirDialog(null, false);
             }
         });
         linearLayoutColumn.addView(buttonBtn);
         Button buttonBtn2 = Ui.btn(this, zHasGame ? "下一步  →" : "安装", Theme.accentDark());
-        buttonBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.9
-            @Override // android.view.View.OnClickListener
+        buttonBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 boolean zHasGame2 = Core.hasGame();
                 MainActivity mainActivity = MainActivity.this;
@@ -354,11 +351,11 @@ public class MainActivity extends Activity {
         });
         linearLayoutColumn.addView(buttonBtn2);
         Button buttonBtn3 = Ui.btn(this, "跳过", Ui.CARD2);
-        buttonBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.10
-            @Override // android.view.View.OnClickListener
+        buttonBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装游戏文件，之后需要手动把游戏放到\n/Download/Casualties Unknown_7.0.1Demo/\n里，否则无法游戏。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.10.1
-                    @Override // android.content.DialogInterface.OnClickListener
+                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装游戏文件，之后需要手动把游戏放到\n/Download/Casualties Unknown_7.0.1Demo/\n里，否则无法游戏。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         MainActivity.this.showWinlator();
                     }
@@ -369,7 +366,6 @@ public class MainActivity extends Activity {
         setPage(Ui.scroll(this, linearLayoutColumn));
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void startGameInstall() {
         if (!hasAllFiles()) {
             askAllFiles();
@@ -394,15 +390,14 @@ public class MainActivity extends Activity {
     }
 
     private void promptPick(final int i, String str, String str2) {
-        new AlertDialog.Builder(this).setTitle(str).setMessage("请把 " + str2 + " 下载到 /storage/emulated/0/Download/ 后重试，\n或者直接从手机里选一个 zip 文件。").setPositiveButton("选择文件", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.11
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(this).setTitle(str).setMessage("请把 " + str2 + " 下载到 /storage/emulated/0/Download/ 后重试，\n或者直接从手机里选一个 zip 文件。").setPositiveButton("选择文件", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i2) {
                 MainActivity.this.pickZip(i);
             }
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void pickZip(int i) {
         Intent intent = new Intent("android.intent.action.OPEN_DOCUMENT");
         intent.addCategory("android.intent.category.OPENABLE");
@@ -414,7 +409,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public InputStream openSrc() throws IOException {
         if (this.srcAsset != null) {
             return getAssets().open(this.srcAsset);
@@ -454,7 +448,7 @@ public class MainActivity extends Activity {
         new Thread(new AnonymousClass12(Core.gameDir(), textView, viewArrBuildProgressOverlay)).start();
     }
 
-    /* renamed from: com.rblh.cu.MainActivity$12, reason: invalid class name */
+    
     class AnonymousClass12 implements Runnable {
         final /* synthetic */ File val$dest;
         final /* synthetic */ View[] val$overlay;
@@ -466,7 +460,7 @@ public class MainActivity extends Activity {
             this.val$overlay = viewArr;
         }
 
-        @Override // java.lang.Runnable
+        @Override
         public void run() {
             InputStream inputStream = null;
             try {
@@ -481,8 +475,8 @@ public class MainActivity extends Activity {
                         }
                         InputStream inputStreamOpenSrc2 = MainActivity.this.openSrc();
                         final long[] jArr = {0};
-                        Installer.unzip(inputStreamOpenSrc2, this.val$dest, strDetectSingleTopDir, new Installer.Progress() { // from class: com.rblh.cu.MainActivity.12.1
-                            @Override // com.rblh.cu.Installer.Progress
+                        Installer.unzip(inputStreamOpenSrc2, this.val$dest, strDetectSingleTopDir, new Installer.Progress() {
+                            @Override
                             public void onProgress(long j, String str) {
                                 String str2;
                                 long jCurrentTimeMillis = System.currentTimeMillis();
@@ -493,8 +487,8 @@ public class MainActivity extends Activity {
                                     } else {
                                         str2 = "已解压 " + Core.human(j) + "\n" + str;
                                     }
-                                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.12.1.1
-                                        @Override // java.lang.Runnable
+                                    MainActivity.this.ui.post(new Runnable() {
+                                        @Override
                                         public void run() {
                                             AnonymousClass12.this.val$ptxt.setText(str2);
                                         }
@@ -502,8 +496,8 @@ public class MainActivity extends Activity {
                                 }
                             }
                         });
-                        MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.12.2
-                            @Override // java.lang.Runnable
+                        MainActivity.this.ui.post(new Runnable() {
+                            @Override
                             public void run() {
                                 MainActivity.this.afterGame();
                             }
@@ -523,8 +517,8 @@ public class MainActivity extends Activity {
             } catch (Throwable th5) {
                 try {
                     Log.e("CUImport", "deploy failed: " + th5, th5);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.12.3
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.shell.removeView(AnonymousClass12.this.val$overlay[0]);
                             Ui.alert(MainActivity.this, "解压失败", String.valueOf(th5));
@@ -546,7 +540,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void afterGame() {
         if (this.wantBep) {
             if (hasAsset("bepinex.zip")) {
@@ -575,24 +568,24 @@ public class MainActivity extends Activity {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在安装 BepInEx…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
         ((ProgressBar) viewArrBuildProgressOverlay[2]).setIndeterminate(true);
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.13
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
-                    Installer.installBepInEx(new FileInputStream(file), new Installer.Progress() { // from class: com.rblh.cu.MainActivity.13.1
-                        @Override // com.rblh.cu.Installer.Progress
+                    Installer.installBepInEx(new FileInputStream(file), new Installer.Progress() {
+                        @Override
                         public void onProgress(long j, String str) {
                         }
                     });
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.13.2
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.showWinlator();
                         }
                     });
                 } catch (Throwable th) {
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.13.3
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                             Ui.alert(MainActivity.this, "BepInEx 安装失败", String.valueOf(th));
@@ -603,7 +596,6 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showWinlator() {
         showWinlator(true);
     }
@@ -632,8 +624,8 @@ public class MainActivity extends Activity {
             linearLayoutCard.addView(linearLayout);
             linearLayoutCard.addView(Ui.desc(this, strArr[i][1] + (installedPkg(i) != null ? "\n状态：✅ 已安装（点「下一步」继续）" : "\n状态：未安装")));
             final int si = i;
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.14
-                @Override // android.view.View.OnClickListener
+            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     if (MainActivity.this.selWinlator == si) {
                         return;
@@ -647,19 +639,19 @@ public class MainActivity extends Activity {
         }
         linearLayoutColumn.addView(this.wlList);
         Button buttonBtn = Ui.btn(this, installedPkg(this.selWinlator) != null ? "下一步  →" : "安  装", Theme.accentDark());
-        buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.15
-            @Override // android.view.View.OnClickListener
+        buttonBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.chooseWinlator(MainActivity.this.selWinlator);
             }
         });
         linearLayoutColumn.addView(buttonBtn);
         Button buttonBtn2 = Ui.btn(this, "跳过", Ui.CARD2);
-        buttonBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.16
-            @Override // android.view.View.OnClickListener
+        buttonBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("没有 Winlator 就无法运行游戏。\n跳过后可以随时在「设置」里再装。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.16.1
-                    @Override // android.content.DialogInterface.OnClickListener
+                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("没有 Winlator 就无法运行游戏。\n跳过后可以随时在「设置」里再装。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialogInterface, int i2) {
                         MainActivity.this.sp.edit().putBoolean("setup_done", true).apply();
                         MainActivity.this.showMain(0);
@@ -670,8 +662,8 @@ public class MainActivity extends Activity {
         linearLayoutColumn.addView(buttonBtn2);
         paintRadios(this.selWinlator);
         final int i2 = this.selWinlator;
-        this.wlList.post(new Runnable() { // from class: com.rblh.cu.MainActivity.17
-            @Override // java.lang.Runnable
+        this.wlList.post(new Runnable() {
+            @Override
             public void run() {
                 MainActivity.this.wlList.snapTo(i2);
             }
@@ -679,7 +671,6 @@ public class MainActivity extends Activity {
         setPage(Ui.scroll(this, linearLayoutColumn), z);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void paintRadios(int i) {
         int i2 = 0;
         while (i2 < this.wlRadios.size()) {
@@ -715,7 +706,6 @@ public class MainActivity extends Activity {
         return null;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean launchPkg(String str) {
         try {
             Intent launchIntentForPackage = getPackageManager().getLaunchIntentForPackage(str);
@@ -765,8 +755,8 @@ public class MainActivity extends Activity {
             layoutParams.setMargins(0, Ui.dp(this, 10.0f), 0, 0);
             textViewTv2.setLayoutParams(layoutParams);
             final int si = i;
-            textViewTv2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.18
-                @Override // android.view.View.OnClickListener
+            textViewTv2.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     dialog.dismiss();
                     runnableArr[si].run();
@@ -777,8 +767,8 @@ public class MainActivity extends Activity {
         TextView textViewTv3 = Ui.tv(this, "取消", 15.0f, Ui.SUB);
         textViewTv3.setGravity(17);
         textViewTv3.setPadding(0, Ui.dp(this, 16.0f), 0, Ui.dp(this, 4.0f));
-        textViewTv3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.19
-            @Override // android.view.View.OnClickListener
+        textViewTv3.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 dialog.dismiss();
             }
@@ -793,7 +783,6 @@ public class MainActivity extends Activity {
         dialog.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void doBackupSaves() {
         int iBackupLimit = Core.backupLimit(this);
         int size = Core.listBackups().size();
@@ -804,8 +793,8 @@ public class MainActivity extends Activity {
         final String str = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在备份存档…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.20
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 File fileFindSlotsDir = Core.findSlotsDir();
                 boolean z = false;
@@ -835,8 +824,8 @@ public class MainActivity extends Activity {
                     }
                 }
                 final boolean fz = z;
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.20.1
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                         boolean z2 = fz;
@@ -874,12 +863,10 @@ public class MainActivity extends Activity {
         return button;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public String qq(String str) {
         return "'" + str.replace("'", "'\\''") + "'";
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean zipDirWithSave(File file, File file2, File file3) {
         FileInputStream fileInputStream;
         if (!file.exists()) {
@@ -952,7 +939,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean zipDir(File file, File file2) {
         if (!file.exists()) {
             return false;
@@ -1009,7 +995,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void exportBackup(File file) {
         String str = ".zip";
         this.pendingExport = file;
@@ -1045,8 +1030,8 @@ public class MainActivity extends Activity {
     private void doImportSave(final Uri uri) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在导入…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.21
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 String str;
                 FileOutputStream fileOutputStream;
@@ -1098,8 +1083,8 @@ public class MainActivity extends Activity {
                                 zZipDir = z4;
                                 final boolean fzZipDir = zZipDir;
                                 final String fstr = str;
-                                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.21.2
-                                    @Override // java.lang.Runnable
+                                MainActivity.this.ui.post(new Runnable() {
+                                    @Override
                                     public void run() {
                                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                                         boolean z5 = fzZipDir;
@@ -1191,8 +1176,8 @@ public class MainActivity extends Activity {
                         }
                         final boolean fzZipDir = zZipDir;
                         final String fstr = str;
-                        MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.21.2
-                            @Override // java.lang.Runnable
+                        MainActivity.this.ui.post(new Runnable() {
+                            @Override
                             public void run() {
                                 MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                                 boolean z5 = fzZipDir;
@@ -1208,8 +1193,8 @@ public class MainActivity extends Activity {
                     }
                 } catch (Throwable th7) {
                     Log.e("CUImport", "import failed", th7);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.21.1
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                             Ui.alert(MainActivity.this, "导入失败", String.valueOf(th7));
@@ -1257,7 +1242,6 @@ public class MainActivity extends Activity {
         return Root.execNs("test -d " + qq(str) + " && echo Y || echo N").contains("Y");
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void deleteRec(File file) {
         File[] fileArrListFiles = file.listFiles();
         if (fileArrListFiles != null) {
@@ -1314,7 +1298,6 @@ public class MainActivity extends Activity {
         return z;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public List<Map.Entry<String, byte[]>> readBackupEntries(File file) throws Exception {
         ArrayList arrayList = new ArrayList();
         if (file.getName().endsWith(".zip")) {
@@ -1354,12 +1337,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showSaveData(final File file, final String str) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在解析…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.22
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 String strExplainTmp;
                 try {
@@ -1378,8 +1360,8 @@ public class MainActivity extends Activity {
                     strExplainTmp = "读取失败：" + th;
                 }
                 final String strExplainSave = strExplainTmp;
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.22.1
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                         TextView textViewTv = Ui.tv(MainActivity.this, strExplainSave, 13.0f, Ui.TEXT);
@@ -1391,12 +1373,11 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void extractOneSave(final File file, final String str, final boolean z) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay(z ? "正在导出…" : "正在备份…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.23
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 String str2;
                 File file2;
@@ -1433,8 +1414,8 @@ public class MainActivity extends Activity {
                     str2 = "失败：" + th2;
                 }
                 final String fstr2 = str2;
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.23.1
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                         boolean zStartsWith = fstr2.startsWith("EXPORT:");
@@ -1450,12 +1431,11 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void removeSaveFromBackup(final File file, final String str) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在删除…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.24
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 String str2;
                 try {
@@ -1501,8 +1481,8 @@ public class MainActivity extends Activity {
                     str2 = "失败：" + th2;
                 }
                 final String fstr2 = str2;
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.24.1
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                         Ui.toast(MainActivity.this, fstr2);
@@ -1513,7 +1493,6 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public String explainSave(byte[] bArr, byte[] bArr2) throws Exception {
         if (bArr == null) {
             return "找不到这个存档。";
@@ -1614,7 +1593,6 @@ public class MainActivity extends Activity {
         return sb.toString();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showDarkDialog(String str, View view) {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(1);
@@ -1632,8 +1610,8 @@ public class MainActivity extends Activity {
         scrollView.addView(view);
         linearLayoutColumn.addView(scrollView);
         Button buttonBtn = Ui.btn(this, "关闭", Ui.CARD2);
-        buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.25
-            @Override // android.view.View.OnClickListener
+        buttonBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view2) {
                 dialog.dismiss();
             }
@@ -1674,12 +1652,11 @@ public class MainActivity extends Activity {
         return button;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showBackupSaves(final File file) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在读取…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.26
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 byte[] bArr;
                 final ArrayList arrayList = new ArrayList();
@@ -1709,8 +1686,8 @@ public class MainActivity extends Activity {
                 } catch (Throwable th) {
                     Log.e("CUImport", "list saves failed", th);
                 }
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.26.1
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                         MainActivity.this.showSavesDialog(file, arrayList);
@@ -1720,7 +1697,6 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public String[] summarizeSave(String str, byte[] bArr, byte[] bArr2) {
         String strReplace;
         byte[] all = bArr;
@@ -1750,7 +1726,6 @@ public class MainActivity extends Activity {
         return null;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showSavesDialog(final File file, List<String[]> list) {
         LinearLayout linearLayoutColumn = Ui.column(this);
         linearLayoutColumn.setPadding(0, Ui.dp(this, 8.0f), 0, 0);
@@ -1776,24 +1751,24 @@ public class MainActivity extends Activity {
             LinearLayout linearLayout2 = new LinearLayout(this);
             linearLayout2.setOrientation(0);
             Button buttonDialogBtn = dialogBtn("详细数据", Theme.accentDark());
-            buttonDialogBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.27
-                @Override // android.view.View.OnClickListener
+            buttonDialogBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.showSaveData(file, strArr[8]);
                 }
             });
             linearLayout2.addView(buttonDialogBtn);
             Button buttonDialogBtn2 = dialogBtn("备份", Ui.CARD2);
-            buttonDialogBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.28
-                @Override // android.view.View.OnClickListener
+            buttonDialogBtn2.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.extractOneSave(file, strArr[8], false);
                 }
             });
             linearLayout2.addView(buttonDialogBtn2);
             Button buttonDialogBtn3 = dialogBtn("导出", Ui.CARD2);
-            buttonDialogBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.29
-                @Override // android.view.View.OnClickListener
+            buttonDialogBtn3.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.extractOneSave(file, strArr[8], true);
                 }
@@ -1801,11 +1776,11 @@ public class MainActivity extends Activity {
             linearLayout2.addView(buttonDialogBtn3);
             Button buttonDialogBtn4 = dialogBtn("删除", Ui.CARD2);
             buttonDialogBtn4.setTextColor(Ui.DANGER);
-            buttonDialogBtn4.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.30
-                @Override // android.view.View.OnClickListener
+            buttonDialogBtn4.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
-                    new AlertDialog.Builder(MainActivity.this).setTitle("从这份备份里删除该存档？").setMessage(strArr[1] + "\n\n只影响这个备份包，不动游戏里的存档。").setPositiveButton("删除", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.30.1
-                        @Override // android.content.DialogInterface.OnClickListener
+                    new AlertDialog.Builder(MainActivity.this).setTitle("从这份备份里删除该存档？").setMessage(strArr[1] + "\n\n只影响这个备份包，不动游戏里的存档。").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialogInterface, int i3) {
                             MainActivity.this.removeSaveFromBackup(file, strArr[8]);
                         }
@@ -1832,13 +1807,13 @@ public class MainActivity extends Activity {
     private void showBackupDetail(final File file) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在读取存档…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.31
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     final String backup = MainActivity.this.parseBackup(file);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.31.2
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                             ScrollView scrollView = new ScrollView(MainActivity.this);
@@ -1852,8 +1827,8 @@ public class MainActivity extends Activity {
                     });
                 } catch (Throwable th) {
                     Log.e("CUImport", "detail failed", th);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.31.1
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
                             Ui.alert(MainActivity.this, "读取失败", String.valueOf(th));
@@ -1899,7 +1874,6 @@ public class MainActivity extends Activity {
         return str;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public String parseBackup(File file) throws Exception {
         byte[] all;
         String name = file.getName();
@@ -2084,7 +2058,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void editNote(final File file) {
         final EditText editText = new EditText(this);
         editText.setText(Core.noteOf(file));
@@ -2094,8 +2067,8 @@ public class MainActivity extends Activity {
         editText.setHint("最多 40 字");
         int iDp = Ui.dp(this, 16.0f);
         editText.setPadding(iDp, iDp, iDp, iDp);
-        new AlertDialog.Builder(this).setTitle("备注").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.32
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(this).setTitle("备注").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 Core.setNote(file, editText.getText().toString());
                 MainActivity.this.showMain(0);
@@ -2103,14 +2076,11 @@ public class MainActivity extends Activity {
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void doRestore(final Uri uri) {
         final View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在恢复存档…");
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.33
-            /* JADX WARN: Finally extract failed */
-            /* JADX WARN: Removed duplicated region for block: B:28:0x00a9  */
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             /*
                 Code decompiled incorrectly, please refer to instructions dump.
                 To view partially-correct code enable 'Show inconsistent code' option in preferences
@@ -2125,7 +2095,6 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void enterWith(int i, String str, String str2) {
         if (i == 2) {
             showGamesirHint(str2);
@@ -2146,8 +2115,8 @@ public class MainActivity extends Activity {
         checkBox.setPadding(iDp, Ui.dp(this, 4.0f), iDp, 0);
         checkBox.setText("不再提醒");
         checkBox.setTextColor(-12303292);
-        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("准备用 盖世游戏 运行").setMessage("打开后请按下面操作把游戏加进去：\n\n① 登录自己的账号\n\n② 选择 游戏库 → 导入游戏\n\n③ 选择启动程序(.exe) → Download → Casualties Unknown_7.0.1Demo → CasualtiesUnknown.exe\n\n④ 启动游戏：\nCasualtiesUnknown.exe\n\n即可").setView(checkBox).setPositiveButton("打开", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.34
-            @Override // android.content.DialogInterface.OnClickListener
+        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("准备用 盖世游戏 运行").setMessage("打开后请按下面操作把游戏加进去：\n\n① 登录自己的账号\n\n② 选择 游戏库 → 导入游戏\n\n③ 选择启动程序(.exe) → Download → Casualties Unknown_7.0.1Demo → CasualtiesUnknown.exe\n\n④ 启动游戏：\nCasualtiesUnknown.exe\n\n即可").setView(checkBox).setPositiveButton("打开", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (checkBox.isChecked()) {
                     Core.prefs(MainActivity.this).edit().putBoolean("gamesir_no_hint", true).apply();
@@ -2155,8 +2124,8 @@ public class MainActivity extends Activity {
                 MainActivity.this.launchPkg(str);
             }
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).create();
-        alertDialogCreate.setOnShowListener(new DialogInterface.OnShowListener() { // from class: com.rblh.cu.MainActivity.35
-            @Override // android.content.DialogInterface.OnShowListener
+        alertDialogCreate.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
             public void onShow(DialogInterface dialogInterface) {
                 AlertDialog alertDialog = (AlertDialog) dialogInterface;
                 alertDialog.getButton(-1).setAllCaps(false);
@@ -2166,7 +2135,6 @@ public class MainActivity extends Activity {
         alertDialogCreate.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void enterGame() {
         ArrayList arrayList = new ArrayList();
         ArrayList arrayList2 = new ArrayList();
@@ -2180,8 +2148,8 @@ public class MainActivity extends Activity {
             }
         }
         if (arrayList2.isEmpty()) {
-            new AlertDialog.Builder(this).setTitle("还没有安装 Winlator").setMessage("游戏需要 Winlator 才能运行。\n要现在去安装吗？").setPositiveButton("去安装", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.36
-                @Override // android.content.DialogInterface.OnClickListener
+            new AlertDialog.Builder(this).setTitle("还没有安装 Winlator").setMessage("游戏需要 Winlator 才能运行。\n要现在去安装吗？").setPositiveButton("去安装", new DialogInterface.OnClickListener() {
+                @Override
                 public void onClick(DialogInterface dialogInterface, int i2) {
                     MainActivity.this.showWinlator();
                 }
@@ -2197,8 +2165,8 @@ public class MainActivity extends Activity {
             final String str = (String) arrayList2.get(i2);
             final String str2 = (String) arrayList.get(i2);
             final int iIntValue = ((Integer) arrayList3.get(i2)).intValue();
-            runnableArr[i2] = new Runnable() { // from class: com.rblh.cu.MainActivity.37
-                @Override // java.lang.Runnable
+            runnableArr[i2] = new Runnable() {
+                @Override
                 public void run() {
                     MainActivity.this.enterWith(iIntValue, str2, str);
                 }
@@ -2207,7 +2175,6 @@ public class MainActivity extends Activity {
         showChooser("检测到多个运行环境", "选择用哪个打开游戏：", (String[]) arrayList.toArray(new String[0]), runnableArr);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void chooseWinlator(int i) {
         String[] strArr;
         String str;
@@ -2230,13 +2197,13 @@ public class MainActivity extends Activity {
                 } else {
                     str = "http://52emu.cn/wp/376.html";
                 }
-                new AlertDialog.Builder(this).setTitle("还没有 " + (i == 0 ? "Bionic Hub" : "Winlator CN")).setMessage("可以到下面这个地址获取：\n\n" + str + "\n\n要现在打开吗？").setPositiveButton("打开链接", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.41
-                    @Override // android.content.DialogInterface.OnClickListener
+                new AlertDialog.Builder(this).setTitle("还没有 " + (i == 0 ? "Bionic Hub" : "Winlator CN")).setMessage("可以到下面这个地址获取：\n\n" + str + "\n\n要现在打开吗？").setPositiveButton("打开链接", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialogInterface, int i2) {
                         MainActivity.this.openUrl(str);
                     }
-                }).setNeutralButton("复制链接", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.40
-                    @Override // android.content.DialogInterface.OnClickListener
+                }).setNeutralButton("复制链接", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialogInterface, int i2) {
                         ((ClipboardManager) MainActivity.this.getSystemService("clipboard")).setPrimaryClip(ClipData.newPlainText("link", str));
                         Ui.toast(MainActivity.this, "链接已复制");
@@ -2254,13 +2221,13 @@ public class MainActivity extends Activity {
                 return;
             }
         }
-        new AlertDialog.Builder(this).setTitle("还没有 盖世游戏").setMessage("会自动根据设备进行配置，推荐小白使用。\n\n可以到下面这个地址获取：\n\nhttps://gamehub.xiaoji.com/zh-cn/\n\n要现在打开吗？").setPositiveButton("打开链接", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.39
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(this).setTitle("还没有 盖世游戏").setMessage("会自动根据设备进行配置，推荐小白使用。\n\n可以到下面这个地址获取：\n\nhttps://gamehub.xiaoji.com/zh-cn/\n\n要现在打开吗？").setPositiveButton("打开链接", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i2) {
                 MainActivity.this.openUrl("https://gamehub.xiaoji.com/zh-cn/");
             }
-        }).setNeutralButton("复制链接", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.38
-            @Override // android.content.DialogInterface.OnClickListener
+        }).setNeutralButton("复制链接", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i2) {
                 ((ClipboardManager) MainActivity.this.getSystemService("clipboard")).setPrimaryClip(ClipData.newPlainText("link", "https://gamehub.xiaoji.com/zh-cn/"));
                 Ui.toast(MainActivity.this, "链接已复制");
@@ -2268,7 +2235,6 @@ public class MainActivity extends Activity {
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showMain(int i) {
         View viewTabLang;
         if (i != 1) {
@@ -2334,8 +2300,8 @@ public class MainActivity extends Activity {
             linearLayout2.addView(view);
             Ui.pressable(linearLayout2);
             final int si = i;
-            linearLayout2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.42
-                @Override // android.view.View.OnClickListener
+            linearLayout2.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view2) {
                     if (si != MainActivity.this.curTab) {
                         MainActivity.this.showMain(si);
@@ -2363,8 +2329,8 @@ public class MainActivity extends Activity {
         int iAccentDark = Theme.accentDark();
         if (zHasGame) {
             TextView textViewChip = chip("进入游戏", iAccentDark);
-            textViewChip.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.43
-                @Override // android.view.View.OnClickListener
+            textViewChip.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.enterGame();
                 }
@@ -2376,8 +2342,8 @@ public class MainActivity extends Activity {
         linearLayoutCard.addView(Ui.desc(this, "安装状态：" + (zHasGame ? "准备就绪" : "数据缺失") + "\n占用空间：" + (size > 0 ? Core.human(size) : "—") + "\n已装模组：" + Core.scanMods().size() + " 个\n路径：" + Core.gameDir().getAbsolutePath()));
         if (!zHasGame) {
             Button buttonSmallBtn = Ui.smallBtn(this, "重新安装", iAccentDark);
-            buttonSmallBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.44
-                @Override // android.view.View.OnClickListener
+            buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.showInstall();
                 }
@@ -2401,16 +2367,16 @@ public class MainActivity extends Activity {
         LinearLayout linearLayout2 = new LinearLayout(this);
         linearLayout2.setOrientation(0);
         Button buttonSmallBtn2 = Ui.smallBtn(this, "＋ 备份", iAccentDark);
-        buttonSmallBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.45
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.doBackupSaves();
             }
         });
         linearLayout2.addView(buttonSmallBtn2);
         Button buttonSmallBtn3 = Ui.smallBtn(this, "导入存档", Ui.CARD2);
-        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.46
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.pickZip(MainActivity.REQ_IMPORT_SAVE);
             }
@@ -2457,15 +2423,15 @@ public class MainActivity extends Activity {
             LinearLayout linearLayout3 = new LinearLayout(this);
             linearLayout3.setOrientation(0);
             Button buttonTinyBtn = tinyBtn("恢复存档", iAccentDark);
-            buttonTinyBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.47
-                @Override // android.view.View.OnClickListener
+            buttonTinyBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     AlertDialog.Builder title = new AlertDialog.Builder(MainActivity.this).setTitle("恢复这份备份？");
                     StringBuilder sbAppend = new StringBuilder().append("会用「");
                     int length = Core.noteOf(file).length();
                     File file2 = file;
-                    title.setMessage(sbAppend.append(length > 0 ? Core.noteOf(file2) : file2.getName()).append("」完全替换当前存档。\n\n当前 ").append(Core.saveCount()).append(" 个存档会全部删除，只保留备份里的。\n建议先备份一次当前存档。").toString()).setPositiveButton("恢复", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.47.1
-                        @Override // android.content.DialogInterface.OnClickListener
+                    title.setMessage(sbAppend.append(length > 0 ? Core.noteOf(file2) : file2.getName()).append("」完全替换当前存档。\n\n当前 ").append(Core.saveCount()).append(" 个存档会全部删除，只保留备份里的。\n建议先备份一次当前存档。").toString()).setPositiveButton("恢复", new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             MainActivity.this.doRestore(Uri.fromFile(file));
                         }
@@ -2474,24 +2440,24 @@ public class MainActivity extends Activity {
             });
             linearLayout3.addView(buttonTinyBtn);
             Button buttonTinyBtn2 = tinyBtn("导出存档", Ui.CARD2);
-            buttonTinyBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.48
-                @Override // android.view.View.OnClickListener
+            buttonTinyBtn2.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.exportBackup(file);
                 }
             });
             linearLayout3.addView(buttonTinyBtn2);
             Button buttonTinyBtn3 = tinyBtn("备注", Ui.CARD2);
-            buttonTinyBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.49
-                @Override // android.view.View.OnClickListener
+            buttonTinyBtn3.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.editNote(file);
                 }
             });
             linearLayout3.addView(buttonTinyBtn3);
             Button buttonTinyBtn4 = tinyBtn("详情", Ui.CARD2);
-            buttonTinyBtn4.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.50
-                @Override // android.view.View.OnClickListener
+            buttonTinyBtn4.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.showBackupSaves(file);
                 }
@@ -2502,11 +2468,11 @@ public class MainActivity extends Activity {
             linearLayout3.addView(view);
             Button buttonTinyBtn5 = tinyBtn("删除", 0);
             buttonTinyBtn5.setTextColor(Ui.DANGER);
-            buttonTinyBtn5.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.51
-                @Override // android.view.View.OnClickListener
+            buttonTinyBtn5.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view2) {
-                    new AlertDialog.Builder(MainActivity.this).setTitle("删除这份备份？").setMessage(file.getName() + "\n\n删除后无法恢复。").setPositiveButton("删除", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.51.1
-                        @Override // android.content.DialogInterface.OnClickListener
+                    new AlertDialog.Builder(MainActivity.this).setTitle("删除这份备份？").setMessage(file.getName() + "\n\n删除后无法恢复。").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             Core.noteFile(file).delete();
                             Ui.toast(MainActivity.this, file.delete() ? "已删除" : "删除失败");
@@ -2522,19 +2488,18 @@ public class MainActivity extends Activity {
         return Ui.scroll(this, linearLayoutColumn);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showBepInExPrompt() {
         if (this.bepPromptShown) {
             return;
         }
         this.bepPromptShown = true;
-        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("未检测到 BepInEx").setMessage("安装模组需要 BepInEx 前置框架。\n\n是否现在安装？\n（约 0.6 MB，安装完模组页会自动解锁）").setPositiveButton("安装", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.53
-            @Override // android.content.DialogInterface.OnClickListener
+        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("未检测到 BepInEx").setMessage("安装模组需要 BepInEx 前置框架。\n\n是否现在安装？\n（约 0.6 MB，安装完模组页会自动解锁）").setPositiveButton("安装", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 MainActivity.this.installBepFromAsset();
             }
-        }).setNeutralButton("重新检测", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.52
-            @Override // android.content.DialogInterface.OnClickListener
+        }).setNeutralButton("重新检测", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 boolean zHasBepInEx = Core.hasBepInEx();
                 MainActivity mainActivity = MainActivity.this;
@@ -2548,8 +2513,8 @@ public class MainActivity extends Activity {
                 }
             }
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).create();
-        alertDialogCreate.setOnShowListener(new DialogInterface.OnShowListener() { // from class: com.rblh.cu.MainActivity.54
-            @Override // android.content.DialogInterface.OnShowListener
+        alertDialogCreate.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
             public void onShow(DialogInterface dialogInterface) {
                 AlertDialog alertDialog = (AlertDialog) dialogInterface;
                 alertDialog.getButton(-1).setAllCaps(false);
@@ -2560,23 +2525,22 @@ public class MainActivity extends Activity {
         alertDialogCreate.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void installBepFromAsset() {
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.55
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     Installer.installBepInEx(MainActivity.this.getAssets().open("bepinex.zip"), null);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.55.1
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             Ui.toast(MainActivity.this, "BepInEx 安装完成，模组页已解锁");
                             MainActivity.this.showMain(1);
                         }
                     });
                 } catch (Throwable th) {
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.55.2
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             Ui.alert(MainActivity.this, "安装失败", String.valueOf(th));
                         }
@@ -2595,8 +2559,8 @@ public class MainActivity extends Activity {
             linearLayoutCard.addView(Ui.cardHeader(this, "🔒 模组功能未解锁", "需要先安装 BepInEx 前置框架。"));
             linearLayoutCard.addView(Ui.desc(this, "BepInEx 是加载模组的基础框架。\n安装之后这里才能看到、开关模组。"));
             Button buttonSmallBtn = Ui.smallBtn(this, "安装 BepInEx", Ui.CARD2);
-            buttonSmallBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.56
-                @Override // android.view.View.OnClickListener
+            buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     MainActivity.this.bepPromptShown = false;
                     MainActivity.this.showBepInExPrompt();
@@ -2606,8 +2570,8 @@ public class MainActivity extends Activity {
             linearLayoutColumn.addView(linearLayoutCard);
             linearLayoutColumn.setAlpha(0.45f);
             ScrollView scrollViewScroll = Ui.scroll(this, linearLayoutColumn);
-            scrollViewScroll.post(new Runnable() { // from class: com.rblh.cu.MainActivity.57
-                @Override // java.lang.Runnable
+            scrollViewScroll.post(new Runnable() {
+                @Override
                 public void run() {
                     MainActivity.this.showBepInExPrompt();
                 }
@@ -2622,16 +2586,16 @@ public class MainActivity extends Activity {
         int i = 0;
         linearLayout.setOrientation(0);
         Button buttonSmallBtn2 = Ui.smallBtn(this, "N 网模组页", Theme.accentDark());
-        buttonSmallBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.58
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.openUrl(MainActivity.URL_NEXUS);
             }
         });
         linearLayout.addView(buttonSmallBtn2);
         Button buttonSmallBtn3 = Ui.smallBtn(this, "本地导入", Ui.CARD2);
-        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.59
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.pickZip(MainActivity.REQ_MOD_ZIP);
             }
@@ -2674,8 +2638,8 @@ public class MainActivity extends Activity {
         }
         linearLayoutCard3.addView(linearLayout2);
         linearLayoutColumn2.addView(linearLayoutCard3);
-        final Runnable runnable = new Runnable() { // from class: com.rblh.cu.MainActivity.60
-            @Override // java.lang.Runnable
+        final Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 Iterator it = listScanMods.iterator();
                 int i5 = 0;
@@ -2712,8 +2676,8 @@ public class MainActivity extends Activity {
             textViewTv5.setPadding(0, Ui.dp(this, 6.0f), 0, 0);
             linearLayoutCard5.addView(textViewTv4);
             linearLayoutCard5.addView(textViewTv5);
-            r13.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() { // from class: com.rblh.cu.MainActivity.61
-                @Override // android.widget.CompoundButton.OnCheckedChangeListener
+            r13.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
                     if (z == mod.enabled) {
                         return;
@@ -2741,8 +2705,8 @@ public class MainActivity extends Activity {
         LinearLayout linearLayoutCard = Ui.card(this);
         linearLayoutCard.addView(Ui.cardHeader(this, "语言包", "语言文件位于游戏目录的 Data/Lang/ 下。\n导入后在游戏内「设置 → 语言」切换。"));
         Button buttonSmallBtn = Ui.smallBtn(this, "导入语言包", Theme.accentDark());
-        buttonSmallBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.62
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.pickZip(MainActivity.REQ_LANG_ZIP);
             }
@@ -2778,8 +2742,8 @@ public class MainActivity extends Activity {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(0);
         Button buttonSmallBtn = Ui.smallBtn(this, "修改", Theme.accentDark());
-        buttonSmallBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.63
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.showGameDirDialog(textViewTv, true);
             }
@@ -2787,8 +2751,8 @@ public class MainActivity extends Activity {
         linearLayout.addView(buttonSmallBtn);
         if (z) {
             Button buttonSmallBtn2 = Ui.smallBtn(this, "恢复默认", Ui.CARD2);
-            buttonSmallBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.64
-                @Override // android.view.View.OnClickListener
+            buttonSmallBtn2.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Core.setCustomDir(MainActivity.this, null);
                     textViewTv.setText(Core.gameDir().getAbsolutePath());
@@ -2811,8 +2775,8 @@ public class MainActivity extends Activity {
         textViewTv3.setPadding(0, Ui.dp(this, 8.0f), 0, 0);
         linearLayoutCard2.addView(textViewTv3);
         Button buttonSmallBtn3 = Ui.smallBtn(this, "修改", Ui.CARD2);
-        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.65
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn3.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 final EditText editText = new EditText(MainActivity.this);
                 editText.setText(String.valueOf(Core.backupLimit(MainActivity.this)));
@@ -2820,8 +2784,8 @@ public class MainActivity extends Activity {
                 editText.setSingleLine(true);
                 int iDp = Ui.dp(MainActivity.this, 16.0f);
                 editText.setPadding(iDp, iDp, iDp, iDp);
-                new AlertDialog.Builder(MainActivity.this).setTitle("备份上限").setMessage("范围 1 ~ 255").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.65.1
-                    @Override // android.content.DialogInterface.OnClickListener
+                new AlertDialog.Builder(MainActivity.this).setTitle("备份上限").setMessage("范围 1 ~ 255").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         int i2;
                         try {
@@ -2848,8 +2812,8 @@ public class MainActivity extends Activity {
         LinearLayout linearLayoutCard3 = Ui.card(this);
         linearLayoutCard3.addView(Ui.cardHeader(this, "重新开始", "清除安装记录，重新进入安装向导。\n不会删除已安装的文件。"));
         Button buttonSmallBtn4 = Ui.smallBtn(this, "重置向导", Ui.CARD2);
-        buttonSmallBtn4.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.66
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn4.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.sp.edit().clear().apply();
                 MainActivity.this.showHome();
@@ -2867,8 +2831,8 @@ public class MainActivity extends Activity {
         buttonSmallBtn5.setMinHeight(0);
         buttonSmallBtn5.setMinimumHeight(0);
         buttonSmallBtn5.setHeight(iDp);
-        buttonSmallBtn5.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.67
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn5.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.openUrl(Obf.d(MainActivity.URL_AUTHOR_ENC));
             }
@@ -2880,8 +2844,8 @@ public class MainActivity extends Activity {
         buttonSmallBtn6.setMinHeight(0);
         buttonSmallBtn6.setMinimumHeight(0);
         buttonSmallBtn6.setHeight(iDp);
-        buttonSmallBtn6.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.68
-            @Override // android.view.View.OnClickListener
+        buttonSmallBtn6.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 MainActivity.this.showSponsorDialog();
             }
@@ -2926,7 +2890,6 @@ public class MainActivity extends Activity {
         return linearLayout;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showSponsorDialog() {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(1);
@@ -2957,16 +2920,16 @@ public class MainActivity extends Activity {
         layoutParams3.bottomMargin = Ui.dp(this, 20.0f);
         linearLayout2.setLayoutParams(layoutParams3);
         Button buttonBtn = Ui.btn(this, "投  喂", -7050010);
-        buttonBtn.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.69
-            @Override // android.view.View.OnClickListener
+        buttonBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 alertDialogCreate.dismiss();
                 MainActivity.this.openUrl(Obf.d(MainActivity.URL_AFDIAN_ENC));
             }
         });
         Button buttonBtn2 = Ui.btn(this, "下次一定", Ui.CARD2);
-        buttonBtn2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.MainActivity.70
-            @Override // android.view.View.OnClickListener
+        buttonBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 alertDialogCreate.dismiss();
             }
@@ -2978,7 +2941,6 @@ public class MainActivity extends Activity {
         linearLayout.addView(linearLayout2);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showGameDirDialog(final TextView textView, final boolean z) {
         final EditText editText = new EditText(this);
         editText.setText(Core.gameDir().getAbsolutePath());
@@ -2986,8 +2948,8 @@ public class MainActivity extends Activity {
         editText.setTextSize(13.0f);
         int iDp = Ui.dp(this, 16.0f);
         editText.setPadding(iDp, iDp, iDp, iDp);
-        new AlertDialog.Builder(this).setTitle("修改游戏目录").setMessage("输入游戏所在文件夹的完整路径。\n留空则恢复默认。").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.72
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(this).setTitle("修改游戏目录").setMessage("输入游戏所在文件夹的完整路径。\n留空则恢复默认。").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 String strTrim = editText.getText().toString().trim();
                 if (strTrim.length() == 0) {
@@ -3023,8 +2985,8 @@ public class MainActivity extends Activity {
                     mainActivity.showInstall();
                 }
             }
-        }).setNeutralButton("用默认", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.71
-            @Override // android.content.DialogInterface.OnClickListener
+        }).setNeutralButton("用默认", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 Core.setCustomDir(MainActivity.this, null);
                 Ui.toast(MainActivity.this, "已恢复默认目录");
@@ -3080,7 +3042,6 @@ public class MainActivity extends Activity {
         return new View[]{linearLayout, textViewTv2, progressBar};
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean hasAllFiles() {
         try {
             if (Build.VERSION.SDK_INT >= 30) {
@@ -3092,10 +3053,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void askAllFiles() {
-        new AlertDialog.Builder(this).setTitle("需要存储权限").setMessage("安装游戏需要「所有文件访问」权限。\n点击「去授权」后在系统设置里打开开关。").setPositiveButton("去授权", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.MainActivity.73
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(this).setTitle("需要存储权限").setMessage("安装游戏需要「所有文件访问」权限。\n点击「去授权」后在系统设置里打开开关。").setPositiveButton("去授权", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 try {
                     MainActivity.this.pendingPermRefresh = true;
@@ -3113,7 +3073,6 @@ public class MainActivity extends Activity {
         }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void openUrl(String str) {
         try {
             startActivity(new Intent("android.intent.action.VIEW", Uri.parse(str)));
@@ -3122,7 +3081,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override // android.app.Activity
+    @Override
     protected void onActivityResult(int i, int i2, Intent intent) {
         super.onActivityResult(i, i2, intent);
         Skin.onResult(this, i, i2, intent);
@@ -3200,20 +3159,20 @@ public class MainActivity extends Activity {
     }
 
     private void deployBepFromUri(final Uri uri) {
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.74
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     Installer.installBepInEx(MainActivity.this.getContentResolver().openInputStream(uri), null);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.74.1
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             Ui.toast(MainActivity.this, "BepInEx 已安装");
                         }
                     });
                 } catch (Throwable th) {
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.74.2
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             Ui.alert(MainActivity.this, "安装失败", String.valueOf(th));
                         }
@@ -3223,7 +3182,6 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public String queryName(Uri uri) {
         Uri uri2;
         int columnIndex;
@@ -3250,7 +3208,6 @@ public class MainActivity extends Activity {
         return path == null ? "unknown" : path.substring(path.lastIndexOf(47) + 1);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean zipContains(Uri uri, String str) {
         ZipEntry nextEntry;
         try {
@@ -3281,7 +3238,7 @@ public class MainActivity extends Activity {
             Log.e("CUImport", "import failed: " + t, t);
             final String msg = String.valueOf(t);
             this.ui.post(new Runnable() {
-                @Override // java.lang.Runnable
+                @Override
                 public void run() {
                     Ui.alert(MainActivity.this, "导入失败", msg);
                     MainActivity.this.showMain(1);
@@ -3291,8 +3248,8 @@ public class MainActivity extends Activity {
     }
 
     private void importFile0(final Uri uri, final boolean z) throws Exception {
-        new Thread(new Runnable() { // from class: com.rblh.cu.MainActivity.75
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                 String strQueryName;
@@ -3332,8 +3289,8 @@ public class MainActivity extends Activity {
                     }
                 } catch (Throwable th2) {
                     Log.e("CUImport", "import failed: " + th2, th2);
-                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.75.4
-                        @Override // java.lang.Runnable
+                    MainActivity.this.ui.post(new Runnable() {
+                        @Override
                         public void run() {
                             Ui.alert(MainActivity.this, "导入失败", "请查看日志或重试。");
                             if (z) {
@@ -3425,8 +3382,8 @@ public class MainActivity extends Activity {
                                     inputStreamOpenInputStream3.close();
                                     fileOutputStream2.close();
                                     final String str2 = Root.copyFile(file3, new StringBuilder().append(Core.pluginsDir().getAbsolutePath()).append("/").append(strQueryName).toString()) ? "已安装 " + strQueryName : "安装失败";
-                                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.75.1
-                                        @Override // java.lang.Runnable
+                                    MainActivity.this.ui.post(new Runnable() {
+                                        @Override
                                         public void run() {
                                             Ui.toast(MainActivity.this, str2);
                                             MainActivity.this.showMain(1);
@@ -3456,8 +3413,8 @@ public class MainActivity extends Activity {
                                     inputStreamOpenInputStream4.close();
                                     fileOutputStream3.close();
                                     str = Root.copyFile(file4, new StringBuilder().append(Core.langDir().getAbsolutePath()).append("/").append(strQueryName).toString()) ? "已导入语言包 " + strQueryName : "导入失败";
-                                    MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.75.2
-                                        @Override // java.lang.Runnable
+                                    MainActivity.this.ui.post(new Runnable() {
+                                        @Override
                                         public void run() {
                                             Ui.toast(MainActivity.this, str);
                                             MainActivity.this.showMain(2);
@@ -3474,8 +3431,8 @@ public class MainActivity extends Activity {
                             }
                             throw new IOException("无法识别的文件类型：" + strQueryName);
                         }
-                        MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.75.4
-                            @Override // java.lang.Runnable
+                        MainActivity.this.ui.post(new Runnable() {
+                            @Override
                             public void run() {
                                 Ui.alert(MainActivity.this, "导入失败", "请查看日志或重试。");
                                 if (z) {
@@ -3618,8 +3575,8 @@ public class MainActivity extends Activity {
                 }
                 final String fstr = str;
                 final boolean fz6 = z6;
-                MainActivity.this.ui.post(new Runnable() { // from class: com.rblh.cu.MainActivity.75.3
-                    @Override // java.lang.Runnable
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
                     public void run() {
                         Ui.toast(MainActivity.this, fstr);
                         MainActivity.this.showMain(fz6 ? 2 : 1);

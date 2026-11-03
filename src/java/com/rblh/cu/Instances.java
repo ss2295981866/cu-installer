@@ -33,8 +33,8 @@ public class Instances {
             LinearLayout linearLayoutCard = Ui.card(activity);
             linearLayoutCard.addView(Ui.cardHeader(activity, "游戏实例", "切换实例、选择已有目录或安装新游戏。"));
             linearLayoutCard.addView(Ui.desc(activity, summary()));
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Instances.1
-                @Override // android.view.View.OnClickListener
+            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Instances.manage(activity);
                 }
@@ -126,8 +126,8 @@ public class Instances {
         }
         strArr[listScan.size()] = "＋ 选择游戏目录…";
         strArr[listScan.size() + 1] = "＋ 安装新游戏…";
-        Skin.modal(activity, "游戏实例", strArr, -1, new Skin.Picker() { // from class: com.rblh.cu.Instances.2
-            @Override // com.rblh.cu.Skin.Picker
+        Skin.modal(activity, "游戏实例", strArr, -1, new Skin.Picker() {
+            @Override
             public void pick(int i2) {
                 if (i2 != listScan.size()) {
                     if (i2 != listScan.size() + 1) {
@@ -146,8 +146,8 @@ public class Instances {
     }
 
     static void switchTo(final Activity activity, final File file) {
-        new AlertDialog.Builder(activity).setTitle("切换实例").setMessage("把当前游戏目录切换到：\n" + file.getAbsolutePath()).setPositiveButton("切换", new DialogInterface.OnClickListener() { // from class: com.rblh.cu.Instances.3
-            @Override // android.content.DialogInterface.OnClickListener
+        new AlertDialog.Builder(activity).setTitle("切换实例").setMessage("把当前游戏目录切换到：\n" + file.getAbsolutePath()).setPositiveButton("切换", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 Core.setCustomDir(activity, file.getAbsolutePath());
                 activity.recreate();
@@ -231,8 +231,8 @@ public class Instances {
         }
         final String strSanitize = sanitize(strDisplayName);
         toast(activity, "正在复制压缩包…");
-        new Thread(new Runnable() { // from class: com.rblh.cu.Instances.4
-            @Override // java.lang.Runnable
+        new Thread(new Runnable() {
+            @Override
             public void run() {
                 final File file = new File(activity.getCacheDir(), "import-" + System.currentTimeMillis() + ".bin");
                 try {
@@ -246,8 +246,8 @@ public class Instances {
                             inputStreamOpenInputStream.close();
                             final File fileUniqueDir = Instances.uniqueDir(new File("/storage/emulated/0/Download"), Instances.stripExt(strSanitize));
                             fileUniqueDir.mkdirs();
-                            activity.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Instances.4.1
-                                @Override // java.lang.Runnable
+                            activity.runOnUiThread(new Runnable() {
+                                @Override
                                 public void run() {
                                     Instances.extract(activity, file, fileUniqueDir, strSanitize);
                                 }
@@ -259,8 +259,8 @@ public class Instances {
                 } catch (Throwable th) {
                     Log.e("Instances", "import failed", th);
                     file.delete();
-                    activity.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Instances.4.2
-                        @Override // java.lang.Runnable
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
                         public void run() {
                             Instances.toast(activity, "导入失败：" + th);
                         }
@@ -303,7 +303,7 @@ public class Instances {
         new Thread(new AnonymousClass5(file, file2, activity, progressBar, textView, textView2, alertDialogCreate)).start();
     }
 
-    /* renamed from: com.rblh.cu.Instances$5, reason: invalid class name */
+    
     static class AnonymousClass5 implements Runnable {
         final /* synthetic */ Activity val$a;
         final /* synthetic */ File val$dest;
@@ -323,14 +323,14 @@ public class Instances {
             this.val$dlg = alertDialog;
         }
 
-        @Override // java.lang.Runnable
+        @Override
         public void run() {
             try {
-                Packer.extract(this.val$src, this.val$dest, new Packer.Progress() { // from class: com.rblh.cu.Instances.5.1
-                    @Override // com.rblh.cu.Packer.Progress
+                Packer.extract(this.val$src, this.val$dest, new Packer.Progress() {
+                    @Override
                     public void on(final int i, final String str) {
-                        AnonymousClass5.this.val$a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Instances.5.1.1
-                            @Override // java.lang.Runnable
+                        AnonymousClass5.this.val$a.runOnUiThread(new Runnable() {
+                            @Override
                             public void run() {
                                 AnonymousClass5.this.val$pb.setProgress(i);
                                 AnonymousClass5.this.val$tv.setText(i + "%");
@@ -346,8 +346,8 @@ public class Instances {
                 }
                 Core.setCustomDir(this.val$a, fileFindGame.getAbsolutePath());
                 this.val$src.delete();
-                this.val$a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Instances.5.2
-                    @Override // java.lang.Runnable
+                this.val$a.runOnUiThread(new Runnable() {
+                    @Override
                     public void run() {
                         AnonymousClass5.this.val$dlg.dismiss();
                         Instances.toast(AnonymousClass5.this.val$a, "已安装：" + fileFindGame.getAbsolutePath());
@@ -356,8 +356,8 @@ public class Instances {
                 });
             } catch (Throwable th) {
                 Log.e("Instances", "extract failed", th);
-                this.val$a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Instances.5.3
-                    @Override // java.lang.Runnable
+                this.val$a.runOnUiThread(new Runnable() {
+                    @Override
                     public void run() {
                         AnonymousClass5.this.val$dlg.dismiss();
                         Instances.toast(AnonymousClass5.this.val$a, "解压失败：" + th.getMessage());
@@ -422,10 +422,6 @@ public class Instances {
         return strTrim.length() == 0 ? "instance" : strTrim;
     }
 
-    /* JADX WARN: Removed duplicated region for block: B:18:0x0030 A[PHI: r7
-      0x0030: PHI (r7v4 android.database.Cursor) = (r7v3 android.database.Cursor), (r7v7 android.database.Cursor) binds: [B:17:0x002e, B:13:0x0029] A[DONT_GENERATE, DONT_INLINE]] */
-    /* JADX WARN: Removed duplicated region for block: B:22:0x003a  */
-    /* JADX WARN: Removed duplicated region for block: B:28:? A[RETURN, SYNTHETIC] */
     /*
         Code decompiled incorrectly, please refer to instructions dump.
         To view partially-correct code enable 'Show inconsistent code' option in preferences

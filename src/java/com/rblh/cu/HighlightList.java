@@ -44,8 +44,8 @@ public class HighlightList extends LinearLayout {
         this.selectedIndex = i;
         View viewChildAt = childAt(i);
         if (viewChildAt == null || viewChildAt.getHeight() == 0) {
-            post(new Runnable() { // from class: com.rblh.cu.HighlightList.1
-                @Override // java.lang.Runnable
+            post(new Runnable() {
+                @Override
                 public void run() {
                     HighlightList.this.snapTo(HighlightList.this.selectedIndex);
                 }
@@ -61,8 +61,8 @@ public class HighlightList extends LinearLayout {
     public void animateTo(final int i, final Runnable runnable) {
         View viewChildAt = childAt(i);
         if (viewChildAt == null || viewChildAt.getHeight() == 0) {
-            post(new Runnable() { // from class: com.rblh.cu.HighlightList.2
-                @Override // java.lang.Runnable
+            post(new Runnable() {
+                @Override
                 public void run() {
                     HighlightList.this.animateTo(i, runnable);
                 }
@@ -81,8 +81,8 @@ public class HighlightList extends LinearLayout {
         this.running = ValueAnimator.ofFloat(0.0f, 1.0f);
         this.running.setDuration(320L);
         this.running.setInterpolator(new DecelerateInterpolator(1.4f));
-        this.running.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() { // from class: com.rblh.cu.HighlightList.3
-            @Override // android.animation.ValueAnimator.AnimatorUpdateListener
+        this.running.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float fFloatValue = ((Float) valueAnimator.getAnimatedValue()).floatValue();
                 HighlightList.this.hlTop = top + ((top2 - top) * fFloatValue);
@@ -91,8 +91,8 @@ public class HighlightList extends LinearLayout {
                 HighlightList.this.invalidate();
             }
         });
-        this.running.addListener(new AnimatorListenerAdapter() { // from class: com.rblh.cu.HighlightList.4
-            @Override // android.animation.AnimatorListenerAdapter, android.animation.Animator.AnimatorListener
+        this.running.addListener(new AnimatorListenerAdapter() {
+            @Override
             public void onAnimationEnd(Animator animator) {
                 if (runnable != null) {
                     runnable.run();
@@ -109,7 +109,7 @@ public class HighlightList extends LinearLayout {
         return getChildAt(i);
     }
 
-    @Override // android.view.ViewGroup, android.view.View
+    @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         if (this.hlHeight > 1.0f && this.alpha > 0) {

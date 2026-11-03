@@ -102,8 +102,8 @@ public class Theme {
         try {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("主题色");
-            builder.setSingleChoiceItems(NAMES, indexOf(sAccent), new DialogInterface.OnClickListener() { // from class: com.rblh.cu.Theme.1
-                @Override // android.content.DialogInterface.OnClickListener
+            builder.setSingleChoiceItems(NAMES, indexOf(sAccent), new DialogInterface.OnClickListener() {
+                @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     int unused = Theme.sAccent = Theme.LIGHT[i];
                     int unused2 = Theme.sDark = Theme.DARK[i];
@@ -129,8 +129,8 @@ public class Theme {
             LinearLayout linearLayoutCard = Ui.card(context);
             linearLayoutCard.addView(Ui.cardHeader(context, "主题色", "选择界面的强调色，点一下即生效。"));
             linearLayoutCard.addView(Ui.desc(context, "当前：" + NAMES[indexOf(sAccent)]));
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Theme.2
-                @Override // android.view.View.OnClickListener
+            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Theme.pick((Activity) view.getContext());
                 }

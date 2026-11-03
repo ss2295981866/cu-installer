@@ -8,7 +8,7 @@ import android.content.Intent;
 public class InstallResultReceiver extends BroadcastReceiver {
     public static final String ACTION = "com.rblh.cu.INSTALL_RESULT";
 
-    @Override // android.content.BroadcastReceiver
+    @Override
     public void onReceive(Context context, Intent intent) {
         int intExtra = intent.getIntExtra("android.content.pm.extra.STATUS", -1);
         String stringExtra = intent.getStringExtra("android.content.pm.extra.STATUS_MESSAGE");

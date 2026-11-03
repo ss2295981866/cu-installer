@@ -136,8 +136,8 @@ public class Ui {
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(iDp, iDp);
         layoutParams.leftMargin = dp(context, 6.0f);
         textView.setLayoutParams(layoutParams);
-        textView.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Ui.1
-            @Override // android.view.View.OnClickListener
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
                 Ui.springPop(view);
                 Ui.alert(context, "说明", str);
@@ -192,8 +192,8 @@ public class Ui {
     }
 
     public static void pressable(View view) {
-        view.setOnTouchListener(new View.OnTouchListener() { // from class: com.rblh.cu.Ui.2
-            @Override // android.view.View.OnTouchListener
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
             public boolean onTouch(View view2, MotionEvent motionEvent) {
                 switch (motionEvent.getActionMasked()) {
                     case 0:
@@ -210,8 +210,8 @@ public class Ui {
     }
 
     public static void springPop(final View view) {
-        view.animate().scaleX(1.15f).scaleY(1.15f).setDuration(110L).setInterpolator(new DecelerateInterpolator()).withEndAction(new Runnable() { // from class: com.rblh.cu.Ui.3
-            @Override // java.lang.Runnable
+        view.animate().scaleX(1.15f).scaleY(1.15f).setDuration(110L).setInterpolator(new DecelerateInterpolator()).withEndAction(new Runnable() {
+            @Override
             public void run() {
                 view.animate().scaleX(1.0f).scaleY(1.0f).setDuration(180L).setInterpolator(new OvershootInterpolator(3.0f)).start();
             }
@@ -219,8 +219,8 @@ public class Ui {
     }
 
     public static void animateOut(View view, final Runnable runnable) {
-        view.animate().alpha(0.0f).scaleX(0.98f).scaleY(0.98f).setDuration(140L).setInterpolator(new DecelerateInterpolator()).withEndAction(new Runnable() { // from class: com.rblh.cu.Ui.4
-            @Override // java.lang.Runnable
+        view.animate().alpha(0.0f).scaleX(0.98f).scaleY(0.98f).setDuration(140L).setInterpolator(new DecelerateInterpolator()).withEndAction(new Runnable() {
+            @Override
             public void run() {
                 if (runnable != null) {
                     runnable.run();
@@ -230,8 +230,8 @@ public class Ui {
     }
 
     private static void safetyNet(final View view) {
-        view.postDelayed(new Runnable() { // from class: com.rblh.cu.Ui.5
-            @Override // java.lang.Runnable
+        view.postDelayed(new Runnable() {
+            @Override
             public void run() {
                 Ui.forceVisible(view);
             }
@@ -242,7 +242,6 @@ public class Ui {
         forceVisible(view);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void forceVisible(View view) {
         if (TAG_ANIM.equals(view.getTag())) {
             view.setTag(null);
@@ -292,8 +291,8 @@ public class Ui {
         ValueAnimator valueAnimatorOfInt = ValueAnimator.ofInt(i, i2);
         valueAnimatorOfInt.setDuration(j);
         valueAnimatorOfInt.setInterpolator(new DecelerateInterpolator());
-        valueAnimatorOfInt.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() { // from class: com.rblh.cu.Ui.6
-            @Override // android.animation.ValueAnimator.AnimatorUpdateListener
+        valueAnimatorOfInt.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 textView.setText(String.valueOf(valueAnimator.getAnimatedValue()));
             }

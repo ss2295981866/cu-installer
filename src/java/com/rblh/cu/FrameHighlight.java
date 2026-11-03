@@ -53,7 +53,7 @@ public class FrameHighlight extends View {
         return this.height;
     }
 
-    @Override // android.view.View
+    @Override
     protected void onDraw(Canvas canvas) {
         if (this.height <= 1.0f || this.alpha <= 0) {
             return;

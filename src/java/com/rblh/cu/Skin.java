@@ -49,12 +49,10 @@ public class Skin {
         void pick(int i);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static SharedPreferences sp(Context context) {
         return context.getSharedPreferences(P, 0);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static File bgFile(Context context) {
         return new File(context.getFilesDir(), "skin_bg.jpg");
     }
@@ -109,8 +107,8 @@ public class Skin {
             String str = bgFile(context).exists() ? "已设置" : "未设置";
             String strStyleName = styleName(style(context));
             linearLayoutCard.addView(Ui.desc(context, "背景图：" + str + "（" + ("stretch".equals(sp(context).getString("bg_mode", "fill")) ? "拉伸" : "填充") + "）\u3000玻璃：" + strStyleName));
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Skin.1
-                @Override // android.view.View.OnClickListener
+            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Skin.menu((Activity) view.getContext());
                 }
@@ -135,8 +133,8 @@ public class Skin {
         strArr[2] = sb.toString();
         strArr[3] = "玻璃样式：" + styleName(strStyle);
         strArr[4] = "移除背景";
-        modal(activity, "外观", strArr, -1, new Picker() { // from class: com.rblh.cu.Skin.2
-            @Override // com.rblh.cu.Skin.Picker
+        modal(activity, "外观", strArr, -1, new Picker() {
+            @Override
             public void pick(int i) {
                 if (i == 0) {
                     Skin.themePicker(activity);
@@ -165,20 +163,18 @@ public class Skin {
         });
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void themePicker(final Activity activity) {
-        modal(activity, "主题色", Theme.NAMES, Theme.index(), new Picker() { // from class: com.rblh.cu.Skin.3
-            @Override // com.rblh.cu.Skin.Picker
+        modal(activity, "主题色", Theme.NAMES, Theme.index(), new Picker() {
+            @Override
             public void pick(int i) {
                 Theme.setIndex(activity, i);
             }
         });
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void stylePicker(final Activity activity) {
-        modal(activity, "玻璃样式", STYLES, styleIndex(style(activity)), new Picker() { // from class: com.rblh.cu.Skin.4
-            @Override // com.rblh.cu.Skin.Picker
+        modal(activity, "玻璃样式", STYLES, styleIndex(style(activity)), new Picker() {
+            @Override
             public void pick(int i) {
                 Skin.sp(activity).edit().putString("glass_style", Skin.STYLE_KEYS[i]).apply();
                 activity.recreate();
@@ -195,8 +191,8 @@ public class Skin {
             final FrameLayout frameLayout = new FrameLayout(activity);
             frameLayout.setBackgroundColor(-1442840576);
             frameLayout.setClickable(true);
-            frameLayout.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Skin.5
-                @Override // android.view.View.OnClickListener
+            frameLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Skin.dismiss(frameLayout);
                 }
@@ -245,8 +241,8 @@ public class Skin {
                 textView2.setTextColor(i2 == i ? Theme.accent() : -985864);
                 textView2.setPadding(dp(activity, 2.0f), dp(activity, 12.0f), dp(activity, 2.0f), dp(activity, 12.0f));
                 final int fi2 = i2;
-                textView2.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Skin.6
-                    @Override // android.view.View.OnClickListener
+                textView2.setOnClickListener(new View.OnClickListener() {
+                    @Override
                     public void onClick(View view) {
                         Skin.dismiss(frameLayout);
                         picker.pick(fi2);
@@ -261,8 +257,8 @@ public class Skin {
             textView3.setTextColor(Ui.SUB);
             textView3.setGravity(17);
             textView3.setPadding(0, dp(activity, 10.0f), 0, dp(activity, 10.0f));
-            textView3.setOnClickListener(new View.OnClickListener() { // from class: com.rblh.cu.Skin.7
-                @Override // android.view.View.OnClickListener
+            textView3.setOnClickListener(new View.OnClickListener() {
+                @Override
                 public void onClick(View view) {
                     Skin.dismiss(frameLayout);
                 }
@@ -293,8 +289,8 @@ public class Skin {
 
         @JavascriptInterface
         public void pick(final int i) {
-            this.a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Skin.Bridge.1
-                @Override // java.lang.Runnable
+            this.a.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     Bridge.this.close();
                     Bridge.this.cb.pick(i);
@@ -304,15 +300,14 @@ public class Skin {
 
         @JavascriptInterface
         public void cancel() {
-            this.a.runOnUiThread(new Runnable() { // from class: com.rblh.cu.Skin.Bridge.2
-                @Override // java.lang.Runnable
+            this.a.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     Bridge.this.close();
                 }
             });
         }
 
-        /* JADX INFO: Access modifiers changed from: private */
         public void close() {
             try {
                 ((ViewGroup) this.overlay.getParent()).removeView(this.overlay);
@@ -325,11 +320,10 @@ public class Skin {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void dismiss(final View view) {
         try {
-            view.animate().alpha(0.0f).setDuration(120L).withEndAction(new Runnable() { // from class: com.rblh.cu.Skin.8
-                @Override // java.lang.Runnable
+            view.animate().alpha(0.0f).setDuration(120L).withEndAction(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         ((ViewGroup) view.getParent()).removeView(view);
@@ -345,7 +339,6 @@ public class Skin {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public static void pickImage(Activity activity) {
         try {
             Intent intent = new Intent("android.intent.action.GET_CONTENT");
@@ -414,8 +407,8 @@ public class Skin {
             return;
         }
         try {
-            Runnable runnable = new Runnable() { // from class: com.rblh.cu.Skin.9
-                @Override // java.lang.Runnable
+            Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     Skin.apply(activity);
                 }
@@ -584,7 +577,7 @@ public class Skin {
             paint3.setColor(1711276032);
         }
 
-        @Override // android.graphics.drawable.Drawable
+        @Override
         public void draw(Canvas canvas) {
             RectF rectF = new RectF(getBounds());
             this.clip.reset();
@@ -647,15 +640,15 @@ public class Skin {
             canvas.restore();
         }
 
-        @Override // android.graphics.drawable.Drawable
+        @Override
         public void setAlpha(int i) {
         }
 
-        @Override // android.graphics.drawable.Drawable
+        @Override
         public void setColorFilter(ColorFilter colorFilter) {
         }
 
-        @Override // android.graphics.drawable.Drawable
+        @Override
         public int getOpacity() {
             return -3;
         }

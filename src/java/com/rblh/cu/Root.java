@@ -109,7 +109,6 @@ public class Root {
         return execNs("mkdir -p " + shellQuote(str2) + " && tar -cf " + shellQuote(str2 + "/a.tar") + " -C " + shellQuote(file.getAbsolutePath()) + " . 2>/dev/null && mkdir -p " + shellQuote(str) + " && cd " + shellQuote(str) + " && tar -xf " + shellQuote(str2 + "/a.tar") + " 2>/dev/null; rm -rf " + shellQuote(str2) + "; echo DONE").contains("DONE");
     }
 
-    /* JADX WARN: Finally extract failed */
     private static void copyTo(File file, String str) throws Exception {
         FileInputStream fileInputStream = new FileInputStream(file);
         FileOutputStream fileOutputStream = new FileOutputStream(str);
