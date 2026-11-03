@@ -4,4 +4,7 @@ build/*.keystore
 *.apk
 *.ap_
 *.dex
+*.iml
+.idea/
+.gradle/
 .DS_Store
