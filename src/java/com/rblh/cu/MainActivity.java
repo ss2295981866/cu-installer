@@ -2895,7 +2895,7 @@ public class MainActivity extends Activity {
         linearLayoutColumn.addView(linearLayoutCard3);
         LinearLayout linearLayoutCard4 = Ui.card(this);
         linearLayoutCard4.addView(Ui.cardHeader(this, "关于", null));
-        linearLayoutCard4.addView(Ui.desc(this, "未知伤亡管理器 v" + appVersion() + "\n作者 若白令狐\n\n免费开源软件（MIT 许可），可自由修改与分发。\n软件版权归原作者所有。"));
+        linearLayoutCard4.addView(Ui.desc(this, "未知伤亡管理器 v" + appVersion() + "\n作者 若白令狐\n\n免费开源软件（MIT 许可），可自由修改与分发。\n名称、图标与署名归作者所有，未经许可不得用于衍生分发。"));
         LinearLayout linearLayout2 = new LinearLayout(this);
         linearLayout2.setOrientation(0);
         int iDp = Ui.dp(this, 44.0f);

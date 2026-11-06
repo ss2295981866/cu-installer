@@ -84,7 +84,11 @@ zip、tar.gz / tgz、rar。7z 会提示不支持，请先转换格式。
 
 ## 许可
 
-代码以 **MIT** 许可发布，见 [LICENSE](LICENSE)。第三方组件与资源见 [NOTICE.md](NOTICE.md)。
+代码以 **MIT** 许可发布，见 [LICENSE](LICENSE)。第三方组件见 [NOTICE.md](NOTICE.md)。
+
+> **名称与图标**：「未知伤亡管理器 / CU Installer」的应用名称、图标与作者署名不在 MIT
+> 授权范围内。可以 Fork 和二次开发，但未经许可不得在衍生分发中使用相同或近似的名称、图标，
+> 或让用户误以为是官方版本。详见 [NOTICE.md](NOTICE.md)。
 
 ## 致谢
 
