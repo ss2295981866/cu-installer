@@ -205,11 +205,11 @@ public class MainActivity extends Activity {
     public void showHome() {
         LinearLayout linearLayoutColumn = Ui.column(this);
         linearLayoutColumn.setGravity(1);
-        TextView textViewTv = Ui.tv(this, "未知伤亡", 34.0f, Theme.accent());
+        TextView textViewTv = Ui.tv(this, "CU Installer", 34.0f, Theme.accent());
         textViewTv.setGravity(17);
         textViewTv.setPadding(0, Ui.dp(this, 48.0f), 0, 0);
         linearLayoutColumn.addView(textViewTv);
-        TextView textViewTv2 = Ui.tv(this, "安 装 器", 15.0f, Ui.SUB);
+        TextView textViewTv2 = Ui.tv(this, "未知伤亡管理器", 15.0f, Ui.SUB);
         textViewTv2.setGravity(17);
         textViewTv2.setPadding(0, Ui.dp(this, 6.0f), 0, Ui.dp(this, 10.0f));
         linearLayoutColumn.addView(textViewTv2);
@@ -2895,7 +2895,7 @@ public class MainActivity extends Activity {
         linearLayoutColumn.addView(linearLayoutCard3);
         LinearLayout linearLayoutCard4 = Ui.card(this);
         linearLayoutCard4.addView(Ui.cardHeader(this, "关于", null));
-        linearLayoutCard4.addView(Ui.desc(this, "未知伤亡管理器 v" + appVersion() + "\n作者 若白令狐\n\n免费开源软件（MIT 许可），可自由修改与分发。\n名称、图标与署名归作者所有，未经许可不得用于衍生分发。"));
+        linearLayoutCard4.addView(Ui.desc(this, "CU Installer v" + appVersion() + "\n作者 若白令狐\n\n免费开源软件（MIT 许可），可自由修改与分发。\n名称、图标与署名归作者所有，未经许可不得用于衍生分发。"));
         LinearLayout linearLayout2 = new LinearLayout(this);
         linearLayout2.setOrientation(0);
         int iDp = Ui.dp(this, 44.0f);
