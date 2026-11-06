@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Method;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import java.util.Enumeration;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -34,12 +36,13 @@ public class Packer {
         }
         if (lowerCase.endsWith(".rar") || isRar(bArrMagic)) {
             extractRar(file, file2, progress);
-        } else {
-            if (lowerCase.endsWith(".7z") || is7z(bArrMagic)) {
-                throw new IOException("暂不支持 7z，请用 zip / tar.gz / rar");
-            }
-            throw new IOException("不认识的压缩格式");
+            return;
         }
+        if (lowerCase.endsWith(".7z") || is7z(bArrMagic)) {
+            extract7z(file, file2, progress);
+            return;
+        }
+        throw new IOException("不认识的压缩格式");
     }
 
     static byte[] magic(File file) throws IOException {
@@ -280,6 +283,55 @@ public class Packer {
         } catch (Throwable th2) {
             method2.invoke(objNewInstance, new Object[0]);
             throw th2;
+        }
+    }
+
+    static void extract7z(File src, File dest, Progress cb) throws Exception {
+        int total = 0;
+        SevenZFile zf = new SevenZFile(src);
+        try {
+            SevenZArchiveEntry entry;
+            while ((entry = zf.getNextEntry()) != null) {
+                if (!entry.isDirectory()) {
+                    total++;
+                }
+            }
+        } finally {
+            zf.close();
+        }
+        SevenZFile zf2 = new SevenZFile(src);
+        try {
+            SevenZArchiveEntry entry;
+            int i = 0;
+            while ((entry = zf2.getNextEntry()) != null) {
+                String name = entry.getName();
+                if (entry.isDirectory()) {
+                    new File(dest, name).mkdirs();
+                    continue;
+                }
+                if (name.indexOf("__MACOSX") >= 0 || name.length() == 0) {
+                    continue;
+                }
+                File out = new File(dest, name);
+                if (!out.getCanonicalPath().startsWith(dest.getCanonicalPath())) {
+                    continue;
+                }
+                File parent = out.getParentFile();
+                if (parent != null) {
+                    parent.mkdirs();
+                }
+                InputStream in = zf2.getInputStream(entry);
+                FileOutputStream os = new FileOutputStream(out);
+                copy(in, os);
+                os.close();
+                in.close();
+                i++;
+                if (cb != null) {
+                    cb.on(i * 100 / Math.max(1, total), name);
+                }
+            }
+        } finally {
+            zf2.close();
         }
     }
 

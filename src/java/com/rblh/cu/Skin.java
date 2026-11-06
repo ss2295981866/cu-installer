@@ -21,8 +21,11 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
@@ -118,13 +121,34 @@ public class Skin {
         }
     }
 
+    static String modeName(int i) {
+        if (i == 1) {
+            return "深色";
+        }
+        if (i == 2) {
+            return "浅色";
+        }
+        return "跟随系统";
+    }
+
+    static void modePicker(final Activity activity) {
+        String[] strArr = {"跟随系统", "深色", "浅色"};
+        modal(activity, "显示模式", strArr, Theme.mode(), new Picker() {
+            @Override
+            public void pick(int i) {
+                Theme.setMode(activity, i);
+                activity.recreate();
+            }
+        });
+    }
+
     public static void menu(final Activity activity) {
         if (activity == null) {
             return;
         }
         final boolean zEquals = "stretch".equals(sp(activity).getString("bg_mode", "fill"));
         String strStyle = style(activity);
-        String[] strArr = new String[5];
+        String[] strArr = new String[6];
         strArr[0] = "主题色";
         strArr[1] = "选择背景图";
         StringBuilder sb = new StringBuilder();
@@ -132,7 +156,8 @@ public class Skin {
         sb.append(zEquals ? "拉伸" : "填充");
         strArr[2] = sb.toString();
         strArr[3] = "玻璃样式：" + styleName(strStyle);
-        strArr[4] = "移除背景";
+        strArr[4] = "显示模式：" + modeName(Theme.mode());
+        strArr[5] = "移除背景";
         modal(activity, "外观", strArr, -1, new Picker() {
             @Override
             public void pick(int i) {
@@ -151,6 +176,10 @@ public class Skin {
                 } else {
                     if (i == 3) {
                         Skin.stylePicker(activity);
+                        return;
+                    }
+                    if (i == 4) {
+                        Skin.modePicker(activity);
                         return;
                     }
                     Skin.bgFile(activity).delete();
@@ -203,23 +232,24 @@ public class Skin {
             linearLayout.setPadding(iDp, iDp, iDp, dp(activity, 8.0f));
             GradientDrawable gradientDrawable = new GradientDrawable();
             String strStyle = style(activity);
+            boolean light = !Ui.isDark();
             if ("liquid".equals(strStyle)) {
-                gradientDrawable.setColors(new int[]{-650492073, -1508961254, -234222061});
+                gradientDrawable.setColors(light ? new int[]{0xE6FFFFFF, 0xCCDDE5F0, 0xF2FFFFFF} : new int[]{-650492073, -1508961254, -234222061});
                 gradientDrawable.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
-                gradientDrawable.setStroke(dp(activity, 1.0f), 1728053247);
+                gradientDrawable.setStroke(dp(activity, 1.0f), light ? 0x44000000 : 1728053247);
             } else if ("glow".equals(strStyle)) {
-                gradientDrawable.setColor(-234353646);
+                gradientDrawable.setColor(light ? 0xF2FFFFFF : -234353646);
                 gradientDrawable.setStroke(dp(activity, 1.0f), Theme.accent());
             } else if ("tint".equals(strStyle)) {
-                gradientDrawable.setColors(new int[]{(Theme.accent() & 16777215) | 1711276032, 1432397306, 1727296182});
+                gradientDrawable.setColors(light ? new int[]{(Theme.accent() & 0xFFFFFF) | 0x66000000, 0x663B82F6, 0x66EC4899} : new int[]{(Theme.accent() & 16777215) | 1711276032, 1432397306, 1727296182});
                 gradientDrawable.setOrientation(GradientDrawable.Orientation.TL_BR);
-                gradientDrawable.setStroke(dp(activity, 1.0f), 1442840575);
+                gradientDrawable.setStroke(dp(activity, 1.0f), light ? 0x33000000 : 1442840575);
             } else if ("outline".equals(strStyle)) {
-                gradientDrawable.setColor(-435548653);
-                gradientDrawable.setStroke(dp(activity, 1.0f), -1426063361);
+                gradientDrawable.setColor(light ? 0xF2FFFFFF : -435548653);
+                gradientDrawable.setStroke(dp(activity, 1.0f), light ? 0x55000000 : -1426063361);
             } else {
-                gradientDrawable.setColor(-133229542);
-                gradientDrawable.setStroke(dp(activity, 1.0f), 587202559);
+                gradientDrawable.setColor(light ? 0xF2FFFFFF : -133229542);
+                gradientDrawable.setStroke(dp(activity, 1.0f), light ? 0x22000000 : 587202559);
             }
             gradientDrawable.setCornerRadius(dp(activity, 20.0f));
             linearLayout.setBackground(gradientDrawable);
@@ -238,7 +268,7 @@ public class Skin {
                 sb.append(strArr[i2]);
                 textView2.setText(sb.toString());
                 textView2.setTextSize(16.0f);
-                textView2.setTextColor(i2 == i ? Theme.accent() : -985864);
+                textView2.setTextColor(i2 == i ? Theme.accent() : Ui.TEXT);
                 textView2.setPadding(dp(activity, 2.0f), dp(activity, 12.0f), dp(activity, 2.0f), dp(activity, 12.0f));
                 final int fi2 = i2;
                 textView2.setOnClickListener(new View.OnClickListener() {
@@ -419,19 +449,23 @@ public class Skin {
         }
     }
 
+    private static final String TAG_BG = "skin_bg_view";
+    private static final String TAG_SCRIM = "skin_scrim_view";
+
     public static void apply(Activity activity) {
         if (activity == null) {
             return;
         }
         try {
+            View content = activity.findViewById(android.R.id.content);
+            View root = content != null ? ((ViewGroup) content).getChildAt(0) : activity.getWindow().getDecorView();
+            if (root == null) {
+                return;
+            }
             File fileBgFile = bgFile(activity);
             if (!fileBgFile.exists()) {
-                View viewFindViewById = activity.findViewById(android.R.id.content);
-                View childAt = viewFindViewById != null ? ((ViewGroup) viewFindViewById).getChildAt(0) : activity.getWindow().getDecorView();
-                if (childAt != null) {
-                    paint(childAt, style(activity));
-                    return;
-                }
+                removeBgViews(root);
+                paint(root, style(activity));
                 return;
             }
             long jLastModified = fileBgFile.lastModified();
@@ -443,39 +477,80 @@ public class Skin {
             if (bitmap == null) {
                 return;
             }
-            if (!"stretch".equals(sp(activity).getString("bg_mode", "fill"))) {
-                int i = activity.getResources().getDisplayMetrics().widthPixels;
-                int i2 = activity.getResources().getDisplayMetrics().heightPixels;
-                if (sFill == null || sFillW != i || sFillH != i2) {
-                    sFill = centerCrop(sBmp, i, i2);
-                    sFillW = i;
-                    sFillH = i2;
-                }
-                Bitmap bitmap2 = sFill;
-                if (bitmap2 != null) {
-                    bitmap = bitmap2;
-                }
-            }
-            BitmapDrawable bitmapDrawable = new BitmapDrawable(activity.getResources(), bitmap);
-            bitmapDrawable.setGravity(119);
-            LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{bitmapDrawable, new ColorDrawable(1711276032)});
-            View viewFindViewById2 = activity.findViewById(android.R.id.content);
-            View childAt2 = viewFindViewById2 != null ? ((ViewGroup) viewFindViewById2).getChildAt(0) : activity.getWindow().getDecorView();
-            if (childAt2 == null) {
+            boolean stretch = "stretch".equals(sp(activity).getString("bg_mode", "fill"));
+            if (!(root instanceof ViewGroup)) {
                 return;
             }
-            childAt2.setBackground(layerDrawable);
-            if (childAt2 instanceof ViewGroup) {
-                ViewGroup viewGroup = (ViewGroup) childAt2;
-                for (int i3 = 0; i3 < viewGroup.getChildCount(); i3++) {
-                    View childAt3 = viewGroup.getChildAt(i3);
-                    if (childAt3.getBackground() instanceof ColorDrawable) {
-                        childAt3.setBackground(null);
-                    }
+            ViewGroup vg = (ViewGroup) root;
+            ImageView iv = (ImageView) vg.findViewWithTag(TAG_BG);
+            if (iv == null) {
+                iv = new ImageView(activity);
+                iv.setTag(TAG_BG);
+                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                vg.addView(iv, 0, new FrameLayout.LayoutParams(-1, -1));
+            }
+            iv.setScaleType(stretch ? ImageView.ScaleType.FIT_XY : ImageView.ScaleType.CENTER_CROP);
+            iv.setImageBitmap(bitmap);
+            iv.setAlpha(1.0f);
+            if (Build.VERSION.SDK_INT >= 31) {
+                try {
+                    Object effect = Class.forName("android.graphics.RenderEffect")
+                            .getMethod("createBlurEffect", float.class, float.class, Shader.TileMode.class)
+                            .invoke(null, 24.0f, 24.0f, Shader.TileMode.CLAMP);
+                    View.class.getMethod("setRenderEffect", Class.forName("android.graphics.RenderEffect"))
+                            .invoke(iv, effect);
+                } catch (Throwable th) {
                 }
             }
-            paint(childAt2, style(activity));
+            View scrim = vg.findViewWithTag(TAG_SCRIM);
+            if (scrim == null) {
+                scrim = new View(activity);
+                scrim.setTag(TAG_SCRIM);
+                scrim.setBackgroundColor(Ui.isDark() ? 0x59000000 : 0x33FFFFFF);
+                vg.addView(scrim, 1, new FrameLayout.LayoutParams(-1, -1));
+            }
+            for (int i3 = vg.getChildCount() - 1; i3 >= 0; i3--) {
+                View child = vg.getChildAt(i3);
+                if (child == iv || child == scrim) {
+                    continue;
+                }
+                clearColorBackgrounds(child);
+            }
+            paint(root, style(activity));
         } catch (Throwable th) {
+        }
+    }
+
+    private static void clearColorBackgrounds(View view) {
+        if (view == null) {
+            return;
+        }
+        try {
+            if (view.getBackground() instanceof ColorDrawable) {
+                view.setBackground(null);
+            }
+            if (view instanceof ViewGroup) {
+                ViewGroup vg = (ViewGroup) view;
+                for (int i = 0; i < vg.getChildCount(); i++) {
+                    clearColorBackgrounds(vg.getChildAt(i));
+                }
+            }
+        } catch (Throwable th) {
+        }
+    }
+
+    private static void removeBgViews(View root) {
+        if (!(root instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup vg = (ViewGroup) root;
+        View bg = vg.findViewWithTag(TAG_BG);
+        if (bg != null) {
+            vg.removeView(bg);
+        }
+        View scrim = vg.findViewWithTag(TAG_SCRIM);
+        if (scrim != null) {
+            vg.removeView(scrim);
         }
     }
 
@@ -498,28 +573,37 @@ public class Skin {
                     view.setBackground(null);
                 } else {
                     GradientDrawable gradientDrawable = (GradientDrawable) background.mutate();
+                    boolean light = !Ui.isDark();
                     if ("liquid".equals(str)) {
                         gradientDrawable.setAlpha(255);
-                        gradientDrawable.setColors(new int[]{-650492073, -1508961254, -234222061});
+                        gradientDrawable.setColors(light ? new int[]{0xCCFFFFFF, 0x99E3EAF3, 0xE6FFFFFF} : new int[]{-650492073, -1508961254, -234222061});
                         gradientDrawable.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
-                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), 1728053247);
+                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), light ? 0x44000000 : 1728053247);
                     } else if ("frost".equals(str)) {
-                        gradientDrawable.setAlpha(225);
+                        gradientDrawable.setAlpha(light ? 235 : 225);
                         gradientDrawable.setStroke(0, 0);
                     } else if ("outline".equals(str)) {
-                        gradientDrawable.setAlpha(22);
-                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), -1711276033);
+                        if (light) {
+                            gradientDrawable.setAlpha(255);
+                            gradientDrawable.setColor(0xD9FFFFFF);
+                            gradientDrawable.setStroke(dp(view.getContext(), 1.0f), 0x66000000);
+                        } else {
+                            gradientDrawable.setAlpha(22);
+                            gradientDrawable.setStroke(dp(view.getContext(), 1.0f), -1711276033);
+                        }
                     } else if ("neumorph".equals(str)) {
                         gradientDrawable.setAlpha(255);
-                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), 587202559);
+                        gradientDrawable.setColors(light ? new int[]{0xFFFFFFFF, 0xFFE9EDF3} : new int[]{-133229542, -14011070});
+                        gradientDrawable.setOrientation(GradientDrawable.Orientation.TL_BR);
+                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), light ? 0x33000000 : 587202559);
                     } else if ("glow".equals(str)) {
                         gradientDrawable.setAlpha(250);
                         gradientDrawable.setStroke(dp(view.getContext(), 1.0f), Theme.accent());
                     } else if ("tint".equals(str)) {
                         gradientDrawable.setAlpha(255);
-                        gradientDrawable.setColors(new int[]{(Theme.accent() & 16777215) | 1291845632, 861971962, 1039430326});
+                        gradientDrawable.setColors(light ? new int[]{(Theme.accent() & 0xFFFFFF) | 0x4D000000, 0x333B82F6, 0x3DEC4899} : new int[]{(Theme.accent() & 16777215) | 1291845632, 861971962, 1039430326});
                         gradientDrawable.setOrientation(GradientDrawable.Orientation.TL_BR);
-                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), 1124073471);
+                        gradientDrawable.setStroke(dp(view.getContext(), 1.0f), light ? Theme.accent() : 1124073471);
                     } else {
                         gradientDrawable.setAlpha(255);
                         gradientDrawable.setStroke(0, 0);

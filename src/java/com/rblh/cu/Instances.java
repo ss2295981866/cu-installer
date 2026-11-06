@@ -422,55 +422,25 @@ public class Instances {
         return strTrim.length() == 0 ? "instance" : strTrim;
     }
 
-    /*
-        Code decompiled incorrectly, please refer to instructions dump.
-        To view partially-correct code enable 'Show inconsistent code' option in preferences
-    */
-    static java.lang.String displayName(android.app.Activity r7, android.net.Uri r8) {
-        /*
-            r0 = 0
-            android.content.ContentResolver r1 = r7.getContentResolver()     // Catch: java.lang.Throwable -> L2c
-            java.lang.String r7 = "_display_name"
-            java.lang.String[] r3 = new java.lang.String[]{r7}     // Catch: java.lang.Throwable -> L2c
-            r4 = 0
-            r5 = 0
-            r6 = 0
-            r2 = r8
-            android.database.Cursor r7 = r1.query(r2, r3, r4, r5, r6)     // Catch: java.lang.Throwable -> L2c
-            if (r7 == 0) goto L29
-            boolean r1 = r7.moveToFirst()     // Catch: java.lang.Throwable -> L27
-            if (r1 == 0) goto L29
-            r1 = 0
-            java.lang.String r8 = r7.getString(r1)     // Catch: java.lang.Throwable -> L27
-            if (r7 == 0) goto L26
-            r7.close()
-        L26:
-            return r8
-        L27:
-            r1 = move-exception
-            goto L2e
-        L29:
-            if (r7 == 0) goto L33
-            goto L30
-        L2c:
-            r7 = move-exception
-            r7 = r0
-        L2e:
-            if (r7 == 0) goto L33
-        L30:
-            r7.close()
-        L33:
-            java.lang.String r7 = r8.getPath()
-            if (r7 != 0) goto L3a
-            goto L43
-        L3a:
-            java.io.File r8 = new java.io.File
-            r8.<init>(r7)
-            java.lang.String r0 = r8.getName()
-        L43:
-            return r0
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.rblh.cu.Instances.displayName(android.app.Activity, android.net.Uri):java.lang.String");
+    static String displayName(android.app.Activity activity, android.net.Uri uri) {
+        android.database.Cursor cursor = null;
+        try {
+            cursor = activity.getContentResolver().query(uri,
+                    new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getString(0);
+            }
+        } catch (Throwable th) {
+        } finally {
+            if (cursor != null) {
+                try {
+                    cursor.close();
+                } catch (Throwable th) {
+                }
+            }
+        }
+        String path = uri.getPath();
+        return path == null ? null : new java.io.File(path).getName();
     }
 
     static int dp(Activity activity, int i) {

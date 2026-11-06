@@ -10,7 +10,7 @@ R8_JAR=${R8_JAR:-$HOME/r8.jar}
 KS=${KS:-$ROOT/build/release.jks}
 KSPASS=${KSPASS:-changeit}
 ALIAS=${ALIAS:-cuinstaller}
-LIBS="$ROOT/libs/junrar-7.5.5.jar:$ROOT/libs/slf4j-api-1.7.36.jar"
+LIBS="$ROOT/libs/junrar-7.5.5.jar:$ROOT/libs/slf4j-api-1.7.36.jar:$ROOT/libs/commons-compress-1.21.jar:$ROOT/libs/xz-1.9.jar"
 
 mkdir -p "$OUT/classes" "$OUT/dex"
 
@@ -20,7 +20,7 @@ javac --release 8 -cp "$ANDROID_JAR:$LIBS" -d "$OUT/classes" "$ROOT"/src/java/co
 
 echo "[2/4] d8"
 java -cp "$R8_JAR" com.android.tools.r8.D8 --min-api 28 --lib "$ANDROID_JAR" \
-  --output "$OUT/dex" "$OUT/classes.jar" "$ROOT/libs/junrar-7.5.5.jar" "$ROOT/libs/slf4j-api-1.7.36.jar"
+  --output "$OUT/dex" "$OUT/classes.jar" "$ROOT/libs/junrar-7.5.5.jar" "$ROOT/libs/slf4j-api-1.7.36.jar" "$ROOT/libs/commons-compress-1.21.jar" "$ROOT/libs/xz-1.9.jar"
 
 echo "[3/4] repack"
 python3 "$ROOT/build/repack.py" "$ROOT/base" "$OUT/dex/classes.dex" "$OUT/app-unsigned.apk"

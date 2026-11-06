@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -12,7 +14,9 @@ public class Theme {
     private static final int DEFAULT = -11870592;
     private static final int DEFAULT_D = -14498466;
     private static final String KEY = "accent";
+    private static final String KEY_MODE = "mode";
     private static final String PREFS = "cu_theme";
+    private static int sMode = 0;
     private static Context sCtx;
     public static final String[] NAMES = {"翠绿", "青色", "天蓝", "紫色", "粉色", "橙色", "黄色", "红色"};
     public static final int[] LIGHT = {-11870592, -14494738, -10443270, -5796870, -757066, -290244, -340971, Ui.DANGER};
@@ -27,11 +31,36 @@ public class Theme {
         try {
             Context applicationContext = context.getApplicationContext();
             sCtx = applicationContext;
-            int i = applicationContext.getSharedPreferences(PREFS, 0).getInt(KEY, -11870592);
+            SharedPreferences sp = applicationContext.getSharedPreferences(PREFS, 0);
+            int i = sp.getInt(KEY, -11870592);
             sAccent = i;
             sDark = darkOf(i);
+            sMode = sp.getInt(KEY_MODE, 0);
+            boolean zDark;
+            if (sMode == 1) {
+                zDark = true;
+            } else if (sMode == 2) {
+                zDark = false;
+            } else {
+                int uiMode = applicationContext.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                zDark = uiMode == Configuration.UI_MODE_NIGHT_YES;
+            }
+            Ui.applyPalette(zDark);
         } catch (Throwable th) {
         }
+    }
+
+    public static int mode() {
+        return sMode;
+    }
+
+    public static void setMode(Context context, int i) {
+        sMode = i;
+        try {
+            context.getSharedPreferences(PREFS, 0).edit().putInt(KEY_MODE, i).apply();
+        } catch (Throwable th) {
+        }
+        init(context);
     }
 
     public static int accent() {

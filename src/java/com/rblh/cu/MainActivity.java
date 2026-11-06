@@ -161,45 +161,28 @@ public class MainActivity extends Activity {
     }
 
     private void setPage(final View view, boolean z) {
-        FrameLayout frameLayout = this.shell;
-        if (0 == 0) {
-            if (frameLayout == null) {
-                this.shell = new FrameLayout(this);
-                this.shell.setBackground(Ui.gradient(Ui.BG2, Ui.BG, 0.0f));
-                setContentView(this.shell);
-            }
-            this.shell.removeAllViews();
-            this.shell.addView(view, new FrameLayout.LayoutParams(-1, -1));
-            Ui.animateIn(view);
-            Skin.applyLater(this);
-            return;
-        }
-        if (frameLayout == null) {
+        final View page = wrapPage(view);
+        if (this.shell == null) {
             this.shell = new FrameLayout(this);
             this.shell.setBackground(Ui.gradient(Ui.BG2, Ui.BG, 0.0f));
             setContentView(this.shell);
-            this.shell.addView(view, new FrameLayout.LayoutParams(-1, -1));
-            Ui.animateIn(view);
-            Skin.applyLater(this);
-            return;
         }
-        int childCount = this.shell.getChildCount();
-        FrameLayout frameLayout2 = this.shell;
-        if (childCount == 0) {
-            frameLayout2.addView(view, new FrameLayout.LayoutParams(-1, -1));
-            Ui.animateIn(view);
-            Skin.applyLater(this);
-        } else {
-            Ui.animateOut(frameLayout2.getChildAt(0), new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.shell.removeAllViews();
-                    MainActivity.this.shell.addView(view, new FrameLayout.LayoutParams(-1, -1));
-                    Ui.animateIn(view);
-                }
-            });
-            Skin.applyLater(this);
+        this.shell.removeAllViews();
+        this.shell.addView(page, new FrameLayout.LayoutParams(-1, -1));
+        Ui.animateIn(page);
+        Skin.applyLater(this);
+    }
+
+    private View wrapPage(View view) {
+        FrameLayout wrap = new FrameLayout(this);
+        wrap.addView(view, new FrameLayout.LayoutParams(-1, -1));
+        int i = getResources().getDisplayMetrics().widthPixels;
+        int iDp = Ui.dp(this, 560.0f);
+        if (i > iDp) {
+            int i2 = (i - iDp) / 2;
+            wrap.setPadding(i2, 0, i2, 0);
         }
+        return wrap;
     }
 
     public void showHome() {
@@ -2144,18 +2127,115 @@ public class MainActivity extends Activity {
         this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
         new Thread(new Runnable() {
             @Override
-            /*
-                Code decompiled incorrectly, please refer to instructions dump.
-                To view partially-correct code enable 'Show inconsistent code' option in preferences
-            */
             public void run() {
-                /*
-                    Method dump skipped, instructions count: 571
-                    To view this dump change 'Code comments level' option to 'DEBUG'
-                */
-                throw new UnsupportedOperationException("Method not decompiled: com.rblh.cu.MainActivity.AnonymousClass33.run():void");
+                boolean ok = false;
+                String message = "";
+                File tmp = new File(getCacheDir(), "restore_" + System.currentTimeMillis());
+                File cache = new File(getCacheDir(), "restore_src_" + System.currentTimeMillis());
+                try {
+                    InputStream in = getContentResolver().openInputStream(uri);
+                    FileOutputStream out = new FileOutputStream(cache);
+                    byte[] b = new byte[65536];
+                    int n;
+                    while ((n = in.read(b)) > 0) {
+                        out.write(b, 0, n);
+                    }
+                    out.close();
+                    in.close();
+                    tmp.mkdirs();
+                    Packer.extract(cache, tmp, null);
+                    File src = findSlotsIn(tmp);
+                    if (src == null) {
+                        throw new java.io.IOException("备份里没有找到存档（slots）");
+                    }
+                    File dest = Core.findSlotsDir();
+                    if (dest == null) {
+                        dest = Core.slotsDir();
+                    }
+                    dest.mkdirs();
+                    copyDir(src, dest);
+                    ok = true;
+                } catch (Throwable th) {
+                    message = String.valueOf(th);
+                } finally {
+                    cache.delete();
+                    deleteDir(tmp);
+                }
+                final boolean fok = ok;
+                final String fmsg = message;
+                MainActivity.this.ui.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity.this.shell.removeView(viewArrBuildProgressOverlay[0]);
+                        if (fok) {
+                            Ui.toast(MainActivity.this, "存档已恢复");
+                            MainActivity.this.showMain(0);
+                        } else {
+                            Ui.alert(MainActivity.this, "恢复失败", fmsg);
+                        }
+                    }
+                });
             }
         }).start();
+    }
+
+    private File findSlotsIn(File dir) {
+        File direct = new File(dir, "slots");
+        if (direct.isDirectory()) {
+            return direct;
+        }
+        File[] children = dir.listFiles();
+        if (children == null) {
+            return null;
+        }
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isDirectory()) {
+                File found = findSlotsIn(children[i]);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void copyDir(File src, File dest) throws Exception {
+        File[] children = src.listFiles();
+        if (children == null) {
+            return;
+        }
+        for (int i = 0; i < children.length; i++) {
+            File child = children[i];
+            File target = new File(dest, child.getName());
+            if (child.isDirectory()) {
+                target.mkdirs();
+                copyDir(child, target);
+            } else {
+                InputStream in = new FileInputStream(child);
+                FileOutputStream out = new FileOutputStream(target);
+                byte[] b = new byte[65536];
+                int n;
+                while ((n = in.read(b)) > 0) {
+                    out.write(b, 0, n);
+                }
+                out.close();
+                in.close();
+            }
+        }
+    }
+
+    private void deleteDir(File dir) {
+        File[] children = dir.listFiles();
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                if (children[i].isDirectory()) {
+                    deleteDir(children[i]);
+                } else {
+                    children[i].delete();
+                }
+            }
+        }
+        dir.delete();
     }
 
     public void enterWith(int i, String str, String str2) {
@@ -2640,6 +2720,18 @@ public class MainActivity extends Activity {
             });
             linearLayoutCard.addView(buttonSmallBtn);
             linearLayoutColumn.addView(linearLayoutCard);
+            LinearLayout linearLayoutLogCard = Ui.card(this);
+            linearLayoutLogCard.addView(Ui.cardHeader(this, "运行日志", "解析 BepInEx/LogOutput.log"));
+            linearLayoutLogCard.addView(Ui.desc(this, ModLog.summary(this)));
+            final Button buttonLogBtn = Ui.smallBtn(this, "查看详情", Ui.CARD2);
+            buttonLogBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    LogSheet.show(MainActivity.this);
+                }
+            });
+            linearLayoutLogCard.addView(buttonLogBtn);
+            linearLayoutColumn.addView(linearLayoutLogCard);
             linearLayoutColumn.setAlpha(0.45f);
             ScrollView scrollViewScroll = Ui.scroll(this, linearLayoutColumn);
             scrollViewScroll.post(new Runnable() {
@@ -2768,6 +2860,18 @@ public class MainActivity extends Activity {
             linearLayoutColumn2.addView(linearLayoutCard5);
             f = 1.0f;
         }
+        LinearLayout linearLayoutLog = Ui.card(this);
+        linearLayoutLog.addView(Ui.cardHeader(this, "运行日志", "解析 BepInEx/LogOutput.log"));
+        linearLayoutLog.addView(Ui.desc(this, ModLog.summary(this)));
+        final Button buttonLog = Ui.smallBtn(this, "查看详情", Ui.CARD2);
+        buttonLog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LogSheet.show(MainActivity.this);
+            }
+        });
+        linearLayoutLog.addView(buttonLog);
+        linearLayoutColumn2.addView(linearLayoutLog);
         return Ui.scroll(this, linearLayoutColumn2);
     }
 

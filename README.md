@@ -9,9 +9,10 @@
 
 | 模块 | 说明 |
 |---|---|
-| 安装游戏 | 选择游戏压缩包自动解压，或直接指定已有游戏目录 |
+| 安装游戏 | 选择游戏压缩包自动解压（zip / tar.gz / rar / 7z），或直接指定已有游戏目录 |
 | 游戏检测 | 自动扫描 Download、Documents、Games、存储根目录与外置 SD |
 | BepInEx | 一键安装；扫描 `plugins/`，开关模组只需点一下 |
+| 运行日志 | 解析 `BepInEx/LogOutput.log`，按模组列出错误/警告，支持导出 |
 | 语言包 | 扫描 `CasualtiesUnknown_Data/Lang/*.json`，显示词条数量 |
 | 存档 | `save.sv` 备份、恢复、导入导出，支持备注 |
 | 游戏实例 | 多份游戏目录共存，一键切换 |
@@ -76,7 +77,7 @@ src/java/             应用 Java 源码
 「已安装游戏？」手动指定目录。
 
 **支持哪些压缩格式？**
-zip、tar.gz / tgz、rar。7z 会提示不支持，请先转换格式。
+zip、tar.gz / tgz、rar、7z。
 
 ## 贡献
 

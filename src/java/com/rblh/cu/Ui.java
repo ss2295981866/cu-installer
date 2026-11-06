@@ -27,23 +27,53 @@ import android.widget.Toast;
 
 /* loaded from: classes.dex */
 public class Ui {
-    public static final int ACCENT = -11870592;
-    public static final int ACCENT_D = -14498466;
-    public static final int ACCENT_DIM = 642440832;
-    public static final int BG = -16118253;
-    public static final int BG2 = -15789030;
-    public static final int CARD = -15393756;
-    public static final int CARD2 = -14735309;
-    public static final int CARD3 = -14011070;
-    public static final int DANGER = -495247;
+    public static int ACCENT = -11870592;
+    public static int ACCENT_D = -14498466;
+    public static int ACCENT_DIM = 642440832;
+    public static int BG = -16118253;
+    public static int BG2 = -15789030;
+    public static int CARD = -15393756;
+    public static int CARD2 = -14735309;
+    public static int CARD3 = -14011070;
+    public static int DANGER = -495247;
     public static final float R_BTN = 14.0f;
     public static final float R_CARD = 20.0f;
     public static final float R_SMALL = 10.0f;
-    public static final int SUB = -7628632;
-    public static final int SUB2 = -10720903;
+    public static int SUB = -7628632;
+    public static int SUB2 = -10720903;
     private static final String TAG_ANIM = "ui_stagger";
-    public static final int TEXT = -985864;
-    public static final int WARN = -278748;
+    public static int TEXT = -985864;
+    public static int WARN = -278748;
+    public static boolean DARK = true;
+
+    public static void applyPalette(boolean dark) {
+        DARK = dark;
+        if (dark) {
+            BG = -16118253;
+            BG2 = -15789030;
+            CARD = -15393756;
+            CARD2 = -14735309;
+            CARD3 = -14011070;
+            TEXT = -985864;
+            SUB = -7628632;
+            SUB2 = -10720903;
+            WARN = -278748;
+        } else {
+            BG = 0xFFF4F5F7;
+            BG2 = 0xFFEDEFF3;
+            CARD = 0xFFFFFFFF;
+            CARD2 = 0xFFF0F2F5;
+            CARD3 = 0xFFE6E9EE;
+            TEXT = 0xFF14181D;
+            SUB = 0xFF5C636B;
+            SUB2 = 0xFF8B929A;
+            WARN = 0xFFB8860B;
+        }
+    }
+
+    public static boolean isDark() {
+        return DARK;
+    }
 
     public static int dp(Context context, float f) {
         return (int) TypedValue.applyDimension(1, f, context.getResources().getDisplayMetrics());
@@ -333,7 +363,11 @@ public class Ui {
             Window window = activity.getWindow();
             window.setStatusBarColor(BG);
             window.setNavigationBarColor(BG);
-            window.getDecorView().setSystemUiVisibility(0);
+            if (DARK) {
+                window.getDecorView().setSystemUiVisibility(0);
+            } else {
+                window.getDecorView().setSystemUiVisibility(8208);
+            }
             if (Build.VERSION.SDK_INT >= 30) {
                 window.setNavigationBarDividerColor(BG);
             }
