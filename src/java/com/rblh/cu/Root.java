@@ -8,14 +8,18 @@ import java.io.InputStream;
 
 /* loaded from: classes.dex */
 public class Root {
-    public static final String GAMESIR_GAME_DIR = "/data/user/0/com.xiaoji.egggame/files/Steam/steamapps/common/Casualties Unknown Demo";
+    public static final String GAMESIR_GAME_DIR = "/data/user/0/com.xiaoji.egggame/files/Steam/steamapps/common/Casualties Unknown";
+    public static final String GAMESIR_GAME_DIR_DEMO = "/data/user/0/com.xiaoji.egggame/files/Steam/steamapps/common/Casualties Unknown Demo";
     private static Boolean cached = null;
     public static String lastOut = "";
 
+    private static long cachedAt = 0L;
+
     public static boolean available() {
-        if (cached != null) {
+        if (cached != null && System.currentTimeMillis() - cachedAt < 5000L) {
             return cached.booleanValue();
         }
+        cachedAt = System.currentTimeMillis();
         try {
             boolean z = true;
             Process processExec = Runtime.getRuntime().exec(new String[]{"su", "-c", "id"});
@@ -47,6 +51,10 @@ public class Root {
 
     public static String execNs(String str) {
         return exec("nsenter -t 1 -m -- sh -c " + shellQuote(str));
+    }
+
+    public static String quote(String str) {
+        return shellQuote(str);
     }
 
     private static String shellQuote(String str) {
@@ -96,7 +104,10 @@ public class Root {
     }
 
     public static boolean copyFile(File file, String str) {
-        return execNs("mkdir -p $(dirname " + shellQuote(str) + ") && cp -f " + shellQuote(file.getAbsolutePath()) + " " + shellQuote(str) + " && chmod 644 " + shellQuote(str) + " && echo DONE").contains("DONE");
+        String dest = shellQuote(str);
+        return execNs("mkdir -p \"$(dirname " + dest + ")\" && cp -f " + shellQuote(file.getAbsolutePath()) + " " + dest
+                + " && OWN=$(stat -c %u \"$(dirname " + dest + ")\") && chown \"$OWN:$OWN\" " + dest
+                + " && chmod 644 " + dest + " && echo DONE").contains("DONE");
     }
 
     public static boolean copyDir(File file, String str) {
@@ -105,8 +116,11 @@ public class Root {
     }
 
     public static boolean copyDirContents(File file, String str) {
-        String str2 = "/data/local/tmp/cui_c_" + System.currentTimeMillis();
-        return execNs("mkdir -p " + shellQuote(str2) + " && tar -cf " + shellQuote(str2 + "/a.tar") + " -C " + shellQuote(file.getAbsolutePath()) + " . 2>/dev/null && mkdir -p " + shellQuote(str) + " && cd " + shellQuote(str) + " && tar -xf " + shellQuote(str2 + "/a.tar") + " 2>/dev/null; rm -rf " + shellQuote(str2) + "; echo DONE").contains("DONE");
+        String dest = shellQuote(str);
+        return execNs("mkdir -p " + dest + " && cp -rf " + shellQuote(file.getAbsolutePath()) + "/. " + dest + "/"
+                + " && OWN=$(stat -c %u \"$(dirname " + dest + ")\") && chown -R \"$OWN:$OWN\" " + dest
+                + " && chmod -R u+rwX,go+rX " + dest
+                + " && echo DONE").contains("DONE");
     }
 
     private static void copyTo(File file, String str) throws Exception {

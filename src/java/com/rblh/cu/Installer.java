@@ -125,56 +125,49 @@ public class Installer {
     }
 
     public static long unzip(InputStream inputStream, File file, Progress progress) throws IOException {
-        ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(inputStream, 65536));
-        byte[] bArr = new byte[65536];
-        long j = 0;
-        while (true) {
-            try {
-                ZipEntry nextEntry = zipInputStream.getNextEntry();
-                if (nextEntry != null) {
-                    String name = nextEntry.getName();
-                    if (name.startsWith("__MACOSX")) {
-                        zipInputStream.closeEntry();
-                    } else {
-                        File file2 = new File(file, name);
-                        if (name.endsWith("/")) {
-                            file2.mkdirs();
-                            zipInputStream.closeEntry();
-                        } else {
-                            File parentFile = file2.getParentFile();
-                            if (parentFile != null && !parentFile.exists()) {
-                                parentFile.mkdirs();
-                            }
-                            FileOutputStream fileOutputStream = new FileOutputStream(file2);
-                            while (true) {
-                                int i = zipInputStream.read(bArr);
-                                if (i <= 0) {
-                                    break;
-                                }
-                                fileOutputStream.write(bArr, 0, i);
-                                j += i;
-                            }
-                            fileOutputStream.close();
-                            zipInputStream.closeEntry();
-                            if (progress != null) {
-                                progress.onProgress(j, name);
-                            }
-                        }
-                    }
-                } else {
-                    try {
-                        break;
-                    } catch (Throwable th) {
-                    }
+        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream, 65536));
+        byte[] buf = new byte[65536];
+        long total = 0;
+        try {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                if (name.startsWith("__MACOSX")) {
+                    zis.closeEntry();
+                    continue;
                 }
-            } finally {
+                File out = new File(file, name);
+                if (name.endsWith("/")) {
+                    out.mkdirs();
+                    zis.closeEntry();
+                    continue;
+                }
+                File parent = out.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+                FileOutputStream fos = new FileOutputStream(out);
                 try {
-                    zipInputStream.close();
-                } catch (Throwable th2) {
+                    int n;
+                    while ((n = zis.read(buf)) > 0) {
+                        fos.write(buf, 0, n);
+                        total += n;
+                    }
+                } finally {
+                    fos.close();
+                }
+                zis.closeEntry();
+                if (progress != null) {
+                    progress.onProgress(total, name);
                 }
             }
+        } finally {
+            try {
+                zis.close();
+            } catch (Throwable th) {
+            }
         }
-        return j;
+        return total;
     }
 
     public static long installGame(InputStream inputStream, File file, Progress progress) throws IOException {
@@ -183,8 +176,71 @@ public class Installer {
 
     public static long installBepInEx(InputStream inputStream, Progress progress) throws IOException {
         File fileGameDir = Core.gameDir();
-        fileGameDir.mkdirs();
-        return unzip(inputStream, fileGameDir, progress);
+        if (!Core.isRootPath()) {
+            fileGameDir.mkdirs();
+            long n = unzip(inputStream, fileGameDir, progress);
+            writeMarker();
+            return n;
+        }
+        File tmp = new File(System.getProperty("java.io.tmpdir", "/data/local/tmp"), "bep_" + System.currentTimeMillis());
+        tmp.mkdirs();
+        long total = unzip(inputStream, tmp, progress);
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("SRC=").append(Root.quote(tmp.getAbsolutePath())).append("; ");
+            sb.append("DST=").append(Root.quote(fileGameDir.getAbsolutePath())).append("; ");
+            sb.append("OWN=$(stat -c %u \"$DST\"); ");
+            sb.append("cp -rf \"$SRC\"/. \"$DST\"/ || exit 2; ");
+            sb.append("chown -R \"$OWN:$OWN\" \"$DST/BepInEx\" 2>/dev/null; ");
+            sb.append("chmod -R u+rwX \"$DST/BepInEx\" 2>/dev/null; ");
+            sb.append("chcon -R --reference=\"$DST\" \"$DST/BepInEx\" 2>/dev/null; ");
+            sb.append("for f in .doorstop_version doorstop_config.ini winhttp.dll changelog.txt; do ");
+            sb.append("if [ -e \"$DST/$f\" ]; then chown \"$OWN:$OWN\" \"$DST/$f\" 2>/dev/null; chmod u+rw \"$DST/$f\" 2>/dev/null; chcon --reference=\"$DST\" \"$DST/$f\" 2>/dev/null; fi; done; ");
+            sb.append("echo DONE");
+            String out = Root.execNs(sb.toString());
+            if (out == null || !out.contains("DONE")) {
+                throw new IOException("写入游戏目录失败：\n" + (out == null ? "" : out));
+            }
+        } catch (IOException e) {
+            throw e;
+        } catch (Throwable th) {
+            throw new IOException("写入游戏目录失败：" + th);
+        } finally {
+            deleteTree(tmp);
+        }
+        Core.invalidate();
+        writeMarker();
+        return total;
+    }
+
+    private static void writeMarker() {
+        try {
+            File marker = new File(Core.bepinexDir(), ".cu_version");
+            String content = Core.BEP_VERSION + "\n";
+            if (Core.isRootPath()) {
+                Root.execNs("printf '%s' " + Root.quote(content) + " > " + Root.quote(marker.getAbsolutePath()));
+            } else {
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(marker);
+                fos.write(content.getBytes("UTF-8"));
+                fos.close();
+            }
+            Core.invalidate();
+        } catch (Throwable th) {
+        }
+    }
+
+    private static void deleteTree(File f) {
+        File[] list = f.listFiles();
+        if (list != null) {
+            for (int i = 0; i < list.length; i++) {
+                if (list[i].isDirectory()) {
+                    deleteTree(list[i]);
+                } else {
+                    list[i].delete();
+                }
+            }
+        }
+        f.delete();
     }
 
     public static void installApk(Context context, File file) throws Throwable {

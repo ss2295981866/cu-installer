@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
         buttonBtn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装游戏文件，之后需要手动把游戏放到\n/Download/Casualties Unknown_7.0.1Demo/\n里，否则无法游戏。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
+                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装游戏文件，之后需要手动把游戏文件夹放到 /Download/ 里，否则无法游戏。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         MainActivity.this.showWinlator();
@@ -2258,7 +2258,7 @@ public class MainActivity extends Activity {
         checkBox.setPadding(iDp, Ui.dp(this, 4.0f), iDp, 0);
         checkBox.setText("不再提醒");
         checkBox.setTextColor(-12303292);
-        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("准备用 盖世游戏 运行").setMessage("打开后请按下面操作把游戏加进去：\n\n① 登录自己的账号\n\n② 选择 游戏库 → 导入游戏\n\n③ 选择启动程序(.exe) → Download → Casualties Unknown_7.0.1Demo → CasualtiesUnknown.exe\n\n④ 启动游戏：\nCasualtiesUnknown.exe\n\n即可").setView(checkBox).setPositiveButton("打开", new DialogInterface.OnClickListener() {
+        AlertDialog alertDialogCreate = new AlertDialog.Builder(this).setTitle("准备用 盖世游戏 运行").setMessage("打开后请按下面操作把游戏加进去：\n\n① 登录自己的账号\n\n② 选择 游戏库 → 导入游戏\n\n③ 选择启动程序(.exe) → 找到你存放游戏的目录 → CasualtiesUnknown.exe\n\n④ 启动游戏：\nCasualtiesUnknown.exe\n\n即可").setView(checkBox).setPositiveButton("打开", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (checkBox.isChecked()) {
@@ -2475,7 +2475,7 @@ public class MainActivity extends Activity {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(0);
         linearLayout.setGravity(16);
-        TextView textViewTv = Ui.tv(this, "Casualties Unknown Demo", 17.0f, Ui.TEXT);
+        TextView textViewTv = Ui.tv(this, "Casualties Unknown", 17.0f, Ui.TEXT);
         textViewTv.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1.0f));
         linearLayout.addView(textViewTv);
         int iAccentDark = Theme.accentDark();
@@ -2491,7 +2491,8 @@ public class MainActivity extends Activity {
         }
         linearLayoutCard.addView(linearLayout);
         long size = Core.size(Core.gameDir());
-        linearLayoutCard.addView(Ui.desc(this, "安装状态：" + (zHasGame ? "准备就绪" : "数据缺失") + "\n占用空间：" + (size > 0 ? Core.human(size) : "—") + "\n已装模组：" + Core.scanMods().size() + " 个\n路径：" + Core.gameDir().getAbsolutePath()));
+        int __mods = Core.scanMods().size();
+        linearLayoutCard.addView(Ui.desc(this, "安装状态：" + (zHasGame ? "准备就绪" : "数据缺失") + "\n占用空间：" + (size > 0 ? Core.human(size) : "—") + "\n已装模组：" + __mods + " 个\n路径：" + Core.gameDir().getAbsolutePath()));
         if (!zHasGame) {
             Button buttonSmallBtn = Ui.smallBtn(this, "重新安装", iAccentDark);
             buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
@@ -2691,6 +2692,7 @@ public class MainActivity extends Activity {
                         }
                     });
                 } catch (Throwable th) {
+                    android.util.Log.e("CUBEP", "install failed", th);
                     MainActivity.this.ui.post(new Runnable() {
                         @Override
                         public void run() {
@@ -2766,6 +2768,32 @@ public class MainActivity extends Activity {
         });
         linearLayout.addView(buttonSmallBtn3);
         linearLayoutCard2.addView(linearLayout);
+        LinearLayout linearLayoutUpdate = new LinearLayout(this);
+        linearLayoutUpdate.setOrientation(0);
+        linearLayoutUpdate.setPadding(0, Ui.dp(this, 10.0f), 0, 0);
+        Button buttonUpdate = Ui.smallBtn(this, "更新 BepInEx", Ui.CARD2);
+        buttonUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("更新 BepInEx")
+                        .setMessage("将用内置的 BepInEx " + Core.BEP_VERSION + " 覆盖安装到当前游戏目录。\n已安装的模组和存档不受影响。")
+                        .setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                MainActivity.this.installBepFromAsset();
+                            }
+                        })
+                        .setNegativeButton("取消", (DialogInterface.OnClickListener) null)
+                        .show();
+            }
+        });
+        String installedBep = Core.bepVersion();
+        boolean needUpdate = installedBep == null || Tools.cmpVer(Tools.ver(installedBep), Tools.ver(Core.BEP_VERSION)) < 0;
+        if (needUpdate) {
+            linearLayoutUpdate.addView(buttonUpdate);
+            linearLayoutCard2.addView(linearLayoutUpdate);
+        }
         linearLayoutColumn2.addView(linearLayoutCard2);
         final List<Core.Mod> listScanMods = Core.scanMods();
         int i2 = 3;
@@ -3589,6 +3617,7 @@ public class MainActivity extends Activity {
                                     inputStreamOpenInputStream4.close();
                                     fileOutputStream3.close();
                                     str = Root.copyFile(file4, new StringBuilder().append(Core.langDir().getAbsolutePath()).append("/").append(strQueryName).toString()) ? "已导入语言包 " + strQueryName : "导入失败";
+                                    Core.invalidate();
                                     MainActivity.this.ui.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -3619,6 +3648,7 @@ public class MainActivity extends Activity {
                         return;
                     }
                     str = Root.copyDirContents(file, fileGameDir.getAbsolutePath()) ? "已导入到 " + fileGameDir.getName() + "/" : "导入失败";
+                    Core.invalidate();
                     z6 = false;
                 } else {
                     z5 = zEndsWith;

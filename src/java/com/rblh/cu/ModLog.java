@@ -31,11 +31,18 @@ public class ModLog {
         return new File(Core.gameDir(), "BepInEx/LogOutput.log");
     }
 
-    static List<Entry> parse() {
-        List<Entry> list = new ArrayList<Entry>();
+    static List<String> readLines() {
+        List<String> lines = new ArrayList<String>();
         File f = logFile();
-        if (!f.isFile()) {
-            return list;
+        if (Core.isRootPath()) {
+            String out = Root.execNs("cat " + Root.quote(f.getAbsolutePath()) + " 2>/dev/null");
+            if (out != null && out.length() > 0) {
+                String[] arr = out.split("\n");
+                for (int i = 0; i < arr.length; i++) {
+                    lines.add(arr[i]);
+                }
+            }
+            return lines;
         }
         BufferedReader reader = null;
         try {
@@ -44,31 +51,7 @@ public class ModLog {
             int n = 0;
             while ((line = reader.readLine()) != null && n < MAX_LINES) {
                 n++;
-                if (line.length() < 3 || line.charAt(0) != '[') {
-                    continue;
-                }
-                int close = line.indexOf(']');
-                if (close < 0) {
-                    continue;
-                }
-                String head = line.substring(1, close);
-                String rest = line.substring(close + 1).trim();
-                int colon = head.indexOf(':');
-                String level = colon >= 0 ? head.substring(0, colon).trim() : head.trim();
-                String mod = colon >= 0 ? head.substring(colon + 1).trim() : "";
-                int lv = 0;
-                if (level.equalsIgnoreCase("Error")) {
-                    lv = 2;
-                } else if (level.equalsIgnoreCase("Warning")) {
-                    lv = 1;
-                } else {
-                    continue;
-                }
-                Entry e = new Entry();
-                e.level = lv;
-                e.mod = mod.length() == 0 ? "BepInEx" : mod;
-                e.text = rest;
-                list.add(e);
+                lines.add(line);
             }
         } catch (Throwable th) {
         } finally {
@@ -78,35 +61,57 @@ public class ModLog {
                 } catch (Throwable th) {
                 }
             }
+        }
+        return lines;
+    }
+
+    static boolean exists() {
+        return Core.exists(logFile());
+    }
+
+    static List<Entry> parse() {
+        List<Entry> list = new ArrayList<Entry>();
+        if (!exists()) {
+            return list;
+        }
+        List<String> lines = readLines();
+        for (int k = 0; k < lines.size(); k++) {
+            String line = lines.get(k);
+            if (line.length() < 3 || line.charAt(0) != '[') {
+                continue;
+            }
+            int close = line.indexOf(']');
+            if (close < 0) {
+                continue;
+            }
+            String head = line.substring(1, close);
+            String rest = line.substring(close + 1).trim();
+            int colon = head.indexOf(':');
+            String level = colon >= 0 ? head.substring(0, colon).trim() : head.trim();
+            String mod = colon >= 0 ? head.substring(colon + 1).trim() : "";
+            int lv = 0;
+            if (level.equalsIgnoreCase("Error")) {
+                lv = 2;
+            } else if (level.equalsIgnoreCase("Warning")) {
+                lv = 1;
+            } else {
+                continue;
+            }
+            Entry e = new Entry();
+            e.level = lv;
+            e.mod = mod.length() == 0 ? "BepInEx" : mod;
+            e.text = rest;
+            list.add(e);
         }
         return list;
     }
 
     static int loadedCount() {
-        File f = logFile();
-        if (!f.isFile()) {
-            return 0;
-        }
         int count = 0;
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(f));
-            String line;
-            int n = 0;
-            while ((line = reader.readLine()) != null && n < MAX_LINES) {
-                n++;
-                int idx = line.indexOf("] Loading [");
-                if (idx >= 0) {
-                    count++;
-                }
-            }
-        } catch (Throwable th) {
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Throwable th) {
-                }
+        List<String> lines = readLines();
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).indexOf("] Loading [") >= 0) {
+                count++;
             }
         }
         return count;
@@ -115,7 +120,7 @@ public class ModLog {
     public static String summary(Activity activity) {
         try {
             File f = logFile();
-            if (!f.isFile()) {
+            if (!exists()) {
                 return "未找到 BepInEx/LogOutput.log\n启动一次游戏后会自动生成。";
             }
             List<Entry> list = parse();
@@ -139,9 +144,50 @@ public class ModLog {
             return "";
         }
         String s = str.trim();
+        try {
+            Matcher ts = Pattern.compile("^\\[\\d{1,2}:\\d{2}:\\d{2}(?:\\.\\d+)?\\]\\s*").matcher(s);
+            if (ts.find()) {
+                s = s.substring(ts.end()).trim();
+            }
+        } catch (Throwable th) {
+        }
         String low = s.toLowerCase();
         try {
-            Matcher m = Pattern.compile("(?i)could not load \\[(.+?)\\] because it has missing dependencies[:\\s]+(.+)").matcher(s);
+            Matcher m;
+            m = Pattern.compile("(?i)^\"(.+?)\"\\s*wasnt found.*").matcher(s);
+            if (m.find()) {
+                return "缺少 UI 资源：" + m.group(1) + "（可能是自定义界面未加载）";
+            }
+            m = Pattern.compile("(?i)^called unregisterallobjects.*").matcher(s);
+            if (m.find()) {
+                return "已重置全部注册对象（UnregisterAllObjects）";
+            }
+            m = Pattern.compile("(?i)^transpiler:\\s*(\\S+)\\s+(\\S+)\\s+transpiler\\s+success.*").matcher(s);
+            if (m.find()) {
+                return "补丁注入成功：" + m.group(1) + "." + m.group(2);
+            }
+            m = Pattern.compile("(?i)^transpiler:\\s*(\\S+)\\s+(\\S+)\\s+transpiler\\s+found\\s+(?:the\\s+)?(?:building if statement|teh body damage part)\\s*(\\d+)?").matcher(s);
+            if (m.find()) {
+                String off = m.group(3) == null ? "" : "（偏移 " + m.group(3) + "）";
+                return "补丁定位：" + m.group(1) + "." + m.group(2) + " 找到目标代码" + off;
+            }
+            m = Pattern.compile("(?i)^dev:\\s*generating type ids:?\\s*base:?\\s*(\\S+)\\s*--\\s*(\\d+)\\s*->\\s*(\\S+)").matcher(s);
+            if (m.find()) {
+                return "注册类型 ID：" + m.group(2) + " -> " + m.group(3) + "（基类 " + m.group(1) + "）";
+            }
+            m = Pattern.compile("(?i)mismatching version detected:?\\s*target:?\\s*(.+?)\\s*-\\s*current:?\\s*(.+)").matcher(s);
+            if (m.find()) {
+                return "版本不匹配：模组需要 " + m.group(1).trim() + "，当前 " + m.group(2).trim();
+            }
+            m = Pattern.compile("(?i)discord rpc onconnectionfailed.*").matcher(s);
+            if (m.find()) {
+                return "Discord RPC 连接失败（不影响游戏）";
+            }
+            m = Pattern.compile("(?i)(?:lang:\\s*)?failed to get (.+?) translation for \"(.+?)\"").matcher(s);
+            if (m.find()) {
+                return "缺少翻译条目：" + m.group(2) + "（语言包 " + m.group(1).trim() + " 未覆盖）";
+            }
+            m = Pattern.compile("(?i)could not load \\[(.+?)\\] because it has missing dependencies[:\\s]+(.+)").matcher(s);
             if (m.find()) {
                 return "无法加载 [" + m.group(1).trim() + "]：缺少依赖 " + m.group(2).trim();
             }
@@ -161,13 +207,43 @@ public class ModLog {
             if (m.find()) {
                 return "依赖解析失败：" + m.group(1).trim();
             }
-            m = Pattern.compile("(?i)accesstools\\.typebyname:\\s*could not find type named (.+)").matcher(s);
+            m = Pattern.compile("(?i)(?:accesstools\\.declaredmethod:?\\s*)?could not find method for type\\s+(\\S+)\\s*(?:and name\\s+(\\S+))?.*").matcher(s);
+            if (m.find()) {
+                String type = m.group(1).trim();
+                String name = m.group(2) == null ? "" : m.group(2).trim().replaceAll("[,\\s]+$", "");
+                return "找不到方法：" + type + (name.length() > 0 ? "." + name : "") + "（模组与游戏版本不匹配）";
+            }
+            m = Pattern.compile("(?i)(?:accesstools\\.typebyname:?\\s*)?could not find type named\\s+(.+)").matcher(s);
             if (m.find()) {
                 return "找不到类型：" + m.group(1).trim() + "（模组与游戏版本不匹配）";
             }
-            m = Pattern.compile("(?i)could not find type named (.+)").matcher(s);
+            m = Pattern.compile("(?i)patch skipped\\s+(\\S+?):?\\s*patching exception in method null.*").matcher(s);
             if (m.find()) {
-                return "找不到类型：" + m.group(1).trim() + "（模组与游戏版本不匹配）";
+                return "跳过补丁 " + m.group(1).replaceAll("[:,]$", "") + "：目标方法不存在（模组与游戏版本不匹配）";
+            }
+            m = Pattern.compile("(?i)failed to patch:?\\s*(.*)").matcher(s);
+            if (m.find()) {
+                String rest = m.group(1).trim();
+                if (rest.length() == 0 || rest.toLowerCase().contains("patching exception in method null")) {
+                    return "补丁失败：目标方法不存在（模组与游戏版本不匹配）";
+                }
+                return "补丁失败：" + rest;
+            }
+            m = Pattern.compile("(?i)patching exception in method null").matcher(s);
+            if (m.find()) {
+                return "补丁异常：目标方法不存在（模组与游戏版本不匹配）";
+            }
+            m = Pattern.compile("(?i)body cache missed\\s+(\\S+)").matcher(s);
+            if (m.find()) {
+                return "肢体缓存缺失：" + m.group(1);
+            }
+            m = Pattern.compile("(?i)accessory\\s+(.+?)\\s+sprite\\s+(.+?)\\s+not loaded").matcher(s);
+            if (m.find()) {
+                return "配件资源未加载：" + m.group(2).trim();
+            }
+            m = Pattern.compile("(?i)sprite\\s+(.+?)\\s+not loaded").matcher(s);
+            if (m.find()) {
+                return "资源未加载：" + m.group(1).trim();
             }
             m = Pattern.compile("(?i)type initializer for '(.+)' threw").matcher(s);
             if (m.find()) {
@@ -177,13 +253,8 @@ public class ModLog {
             if (m.find()) {
                 return "找不到类型：" + m.group(1);
             }
-            m = Pattern.compile("(?i)accessory (.+?) sprite (.+?) not loaded").matcher(s);
-            if (m.find()) {
-                return "配件资源未加载：" + m.group(2).trim();
-            }
-            m = Pattern.compile("(?i)sprite (.+?) not loaded").matcher(s);
-            if (m.find()) {
-                return "资源未加载：" + m.group(1).trim();
+            if (low.contains("gunsaw") && low.contains("multi-limb")) {
+                return "提示：可能启用了多肢体/基因类模组，导致肢体数据异常";
             }
             if (low.contains("steamworks") && low.contains("init failed")) {
                 return "Steamworks 联机组件初始化失败";
@@ -223,15 +294,7 @@ public class ModLog {
             }
         } catch (Throwable th) {
         }
-        String g = s;
-        g = g.replace("Could not load", "无法加载").replace("could not load", "无法加载");
-        g = g.replace("Could not find", "找不到").replace("could not find", "找不到");
-        g = g.replace("missing dependencies", "缺少依赖").replace("Missing dependencies", "缺少依赖");
-        g = g.replace("not loaded", "未加载").replace("Not loaded", "未加载");
-        g = g.replace("init failed", "初始化失败").replace("Init failed", "初始化失败");
-        g = g.replace("not found", "未找到").replace("Not found", "未找到");
-        g = g.replace("failed", "失败").replace("Failed", "失败");
-        return g;
+        return s;
     }
 
     public static String details() {
@@ -245,7 +308,7 @@ public class ModLog {
     public static String detailsExt(int limit, boolean raw) {
         StringBuilder sb = new StringBuilder();
         File f = logFile();
-        if (!f.isFile()) {
+        if (!exists()) {
             return "未找到 BepInEx/LogOutput.log\n\n路径：" + f.getAbsolutePath();
         }
         List<Entry> list = parse();

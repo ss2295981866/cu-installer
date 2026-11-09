@@ -132,7 +132,7 @@ public class Tools {
     }
 
     static int[] ver(String str) {
-        int[] v = new int[3];
+        int[] v = new int[5];
         try {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < str.length(); i++) {
@@ -142,7 +142,7 @@ public class Tools {
                 }
             }
             String[] parts = sb.toString().split("\\.");
-            for (int i = 0; i < 3 && i < parts.length; i++) {
+            for (int i = 0; i < 5 && i < parts.length; i++) {
                 try {
                     v[i] = Integer.parseInt(parts[i]);
                 } catch (Throwable ignored) {
@@ -154,6 +154,18 @@ public class Tools {
     }
 
     static int cmpVer(int[] a, int[] b) {
+        int n = Math.max(a.length, b.length);
+        for (int i = 0; i < n; i++) {
+            int ai = i < a.length ? a[i] : 0;
+            int bi = i < b.length ? b[i] : 0;
+            if (ai != bi) {
+                return ai - bi;
+            }
+        }
+        return 0;
+    }
+
+    static int cmpVerOld(int[] a, int[] b) {
         for (int i = 0; i < 3; i++) {
             if (a[i] != b[i]) {
                 return a[i] - b[i];

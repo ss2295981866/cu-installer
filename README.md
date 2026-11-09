@@ -11,7 +11,7 @@
 |---|---|
 | 安装游戏 | 选择游戏压缩包自动解压（zip / tar.gz / rar / 7z），或直接指定已有游戏目录 |
 | 游戏检测 | 自动扫描 Download、Documents、Games、存储根目录与外置 SD |
-| BepInEx | 一键安装；扫描 `plugins/`，开关模组只需点一下 |
+| BepInEx | 一键安装（内置 5.4.23.6）；扫描 `plugins/`，开关模组只需点一下 |
 | 运行日志 | 解析 `BepInEx/LogOutput.log`，按模组列出错误/警告，支持导出 |
 | 语言包 | 扫描 `CasualtiesUnknown_Data/Lang/*.json`，显示词条数量 |
 | 存档 | `save.sv` 备份、恢复、导入导出，支持备注 |
@@ -93,6 +93,6 @@ zip、tar.gz / tgz、rar、7z。
 
 ## 致谢
 
-- [BepInEx](https://github.com/BepInEx/BepInEx)（LGPL-2.1）
+- [BepInEx](https://github.com/BepInEx/BepInEx) 5.4.23.6（LGPL-2.1）
 - Winlator / 盖世游戏 等运行环境
 - 原作者：若白令狐

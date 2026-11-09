@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /* loaded from: classes.dex */
 public class Core {
@@ -46,9 +48,11 @@ public class Core {
     public static void setCustomDir(Context context, String str) {
         if (str == null || str.trim().length() == 0) {
             customGameDir = null;
+            invalidate();
             prefs(context).edit().remove("game_dir").apply();
         } else {
             customGameDir = str.trim();
+            invalidate();
             prefs(context).edit().putString("game_dir", customGameDir).apply();
         }
     }
@@ -62,6 +66,54 @@ public class Core {
 
     public static File downloadDir() {
         return new File(SD, "Download");
+    }
+
+    public static final String BEP_VERSION = "5.4.23.6";
+
+    public static String bepVersion() {
+        try {
+            File marker = new File(bepinexDir(), ".cu_version");
+            String v = readSmall(marker);
+            if (v != null && v.trim().length() > 0) {
+                return v.trim();
+            }
+            File log = new File(gameDir(), "BepInEx/LogOutput.log");
+            String head = readSmall(log);
+            if (head != null) {
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("BepInEx\\s+([0-9][0-9.]*)").matcher(head);
+                if (m.find()) {
+                    return m.group(1);
+                }
+            }
+        } catch (Throwable th) {
+        }
+        return null;
+    }
+
+    static String readSmall(File file) {
+        try {
+            if (file == null || !exists(file)) {
+                return null;
+            }
+            if (isRootPath()) {
+                return Root.execNs("cat " + Root.quote(file.getAbsolutePath()) + " 2>/dev/null | head -40");
+            }
+            java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(file));
+            try {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                int n = 0;
+                while ((line = r.readLine()) != null && n < 40) {
+                    sb.append(line).append('\n');
+                    n++;
+                }
+                return sb.toString();
+            } finally {
+                r.close();
+            }
+        } catch (Throwable th) {
+            return null;
+        }
     }
 
     public static File bepinexDir() {
@@ -230,9 +282,24 @@ public class Core {
     }
 
     public static File findSlotsDir() {
+        String key = "slots:" + gameDir().getAbsolutePath();
+        if (fresh(key)) {
+            Object v = cached(key);
+            if (v instanceof File) {
+                return (File) v;
+            }
+        }
         File fileGameDir = gameDir();
         File file = new File(fileGameDir, "BepInEx/plugins/slots");
-        return exists(file) ? file : findDirNamed(fileGameDir, "slots", 0);
+        File result;
+        if (isRootPath()) {
+            Probe pb = probe();
+            result = pb.slotsPath != null ? new File(pb.slotsPath) : null;
+        } else {
+            result = exists(file) ? file : findDirNamed(fileGameDir, "slots", 0);
+        }
+        put(key, result == null ? new File("\u0000none") : result);
+        return result;
     }
 
     private static File findDirNamed(File file, String str, int i) {
@@ -249,7 +316,11 @@ public class Core {
             }
         }
         for (String str3 : strArrLs) {
-            File fileFindDirNamed = findDirNamed(new File(file, str3), str, i + 1);
+            File child = new File(file, str3);
+            if (!child.isDirectory() && !(isRootPath() && !str3.contains("."))) {
+                continue;
+            }
+            File fileFindDirNamed = findDirNamed(child, str, i + 1);
             if (fileFindDirNamed != null) {
                 return fileFindDirNamed;
             }
@@ -296,15 +367,121 @@ public class Core {
         return context.getSharedPreferences("cu_installer", 0);
     }
 
+    static class Probe {
+        boolean exe;
+        boolean bep;
+        boolean slots;
+        boolean saveMod;
+        String slotsPath;
+        String[] dlls = new String[0];
+        long size;
+        String[] plugins = new String[0];
+    }
+
+    static Probe probe() {
+        String g = gameDir().getAbsolutePath();
+        String key = "probe:" + g;
+        if (fresh(key)) {
+            Object v = cached(key);
+            if (v instanceof Probe) {
+                return (Probe) v;
+            }
+        }
+        Probe p = new Probe();
+        try {
+            String script = "G=" + Root.quote(g) + "; "
+                    + "echo E:$([ -e \"$G/CasualtiesUnknown.exe\" ] && echo 1 || echo 0); "
+                    + "echo B:$([ -e \"$G/BepInEx/core/BepInEx.dll\" ] && echo 1 || echo 0); "
+                    + "echo S:$(du -sb \"$G\" 2>/dev/null | cut -f1); "
+                    + "echo T:$([ -d \"$G/BepInEx/plugins/slots\" ] && echo 1 || echo 0); "
+                    + "echo F; find \"$G\" -maxdepth 5 -type d -name slots 2>/dev/null | head -1; "
+                    + "echo V:$(find \"$G/BepInEx/plugins\" -maxdepth 3 \\( -iname '*savemanager*' -o -iname '*savemgr*' -o -name '*存档*' \\) 2>/dev/null | wc -l); "
+                    + "echo D; find \"$G/BepInEx/plugins\" -maxdepth 2 -iname '*.dll' 2>/dev/null | head -300; "
+                    + "echo L; ls -1p \"$G/BepInEx/plugins\" 2>/dev/null";
+            String out = Root.execNs(script);
+            String[] lines = out.split("\n");
+            java.util.List<String> plugins = new ArrayList<String>();
+            java.util.List<String> dlls = new ArrayList<String>();
+            boolean inList = false;
+            boolean inDlls = false;
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i].trim();
+                if (inList) {
+                    if (line.length() > 0) {
+                        plugins.add(line);
+                    }
+                    continue;
+                }
+                if (inDlls) {
+                    if (line.startsWith("L")) {
+                        inDlls = false;
+                        inList = true;
+                    } else if (line.length() > 0) {
+                        dlls.add(line);
+                    }
+                    continue;
+                }
+                if (line.equals("D")) {
+                    inDlls = true;
+                    continue;
+                }
+                if (line.startsWith("E:")) {
+                    p.exe = line.contains("1");
+                } else if (line.startsWith("B:")) {
+                    p.bep = line.contains("1");
+                } else if (line.startsWith("S:")) {
+                    try {
+                        p.size = Long.parseLong(line.substring(2).trim());
+                    } catch (Throwable th) {
+                        p.size = 0L;
+                    }
+                } else if (line.startsWith("T:")) {
+                    p.slots = line.contains("1");
+                } else if (line.startsWith("V:")) {
+                    try {
+                        p.saveMod = Integer.parseInt(line.substring(2).trim()) > 0;
+                    } catch (Throwable th) {
+                        p.saveMod = false;
+                    }
+                } else if (line.startsWith("F:")) {
+                    String path = line.substring(2).trim();
+                    if (path.length() > 0) {
+                        p.slotsPath = path;
+                    }
+                } else if (line.equals("L")) {
+                    inList = true;
+                }
+            }
+            p.plugins = plugins.toArray(new String[0]);
+            p.dlls = dlls.toArray(new String[0]);
+        } catch (Throwable th) {
+        }
+        put(key, p);
+        return p;
+    }
+
     public static boolean hasGame() {
+        if (isRootPath()) {
+            return probe().exe;
+        }
         return exists(new File(gameDir(), "CasualtiesUnknown.exe"));
     }
 
     public static boolean hasBepInEx() {
+        if (isRootPath()) {
+            return probe().bep;
+        }
         return exists(new File(bepinexDir(), "core/BepInEx.dll"));
     }
 
     public static boolean hasSaveMod() {
+        if (isRootPath()) {
+            Probe pb = probe();
+            if (pb.saveMod) {
+                return true;
+            }
+            return pb.slotsPath != null;
+        }
         return containsSaveMod(pluginsDir(), 0);
     }
 
@@ -314,8 +491,14 @@ public class Core {
         }
         for (String str : ls(file)) {
             String lowerCase = str.toLowerCase();
-            if (lowerCase.contains("savemanager") || lowerCase.contains("savemgr") || lowerCase.contains("存档管理") || containsSaveMod(new File(file, str), i + 1)) {
+            if (lowerCase.contains("savemanager") || lowerCase.contains("savemgr") || lowerCase.contains("存档管理")) {
                 return true;
+            }
+            File child = new File(file, str);
+            if (child.isDirectory() || (isRootPath() && !str.contains("."))) {
+                if (containsSaveMod(child, i + 1)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -330,26 +513,88 @@ public class Core {
         return gameDir().getAbsolutePath().startsWith("/data/");
     }
 
-    public static String[] ls(File file) {
-        if (isRootPath()) {
-            return Root.list(file.getAbsolutePath());
-        }
-        File[] fileArrListFiles = file.listFiles();
-        if (fileArrListFiles == null) {
-            return new String[0];
-        }
-        String[] strArr = new String[fileArrListFiles.length];
-        for (int i = 0; i < fileArrListFiles.length; i++) {
-            strArr[i] = fileArrListFiles[i].getName();
-        }
-        return strArr;
+    private static final long CACHE_MS = 8000L;
+    private static final Map<String, Object> cacheVal = Collections.synchronizedMap(new HashMap<String, Object>());
+    private static final Map<String, Long> cacheTime = Collections.synchronizedMap(new HashMap<String, Long>());
+
+    static boolean fresh(String key) {
+        Long t = cacheTime.get(key);
+        return t != null && System.currentTimeMillis() - t < CACHE_MS;
     }
 
+    static Object cached(String key) {
+        return cacheVal.get(key);
+    }
+
+    static void put(String key, Object value) {
+        cacheVal.put(key, value);
+        cacheTime.put(key, System.currentTimeMillis());
+    }
+
+    public static void invalidate() {
+        cacheVal.clear();
+        cacheTime.clear();
+    }
+
+    public static String[] ls(File file) {
+        String key = "ls:" + file.getAbsolutePath();
+        if (fresh(key)) {
+            Object v = cached(key);
+            if (v instanceof String[]) {
+                return (String[]) v;
+            }
+        }
+        String[] result;
+        if (isRootPath()) {
+            result = Root.list(file.getAbsolutePath());
+        } else {
+            File[] fileArrListFiles = file.listFiles();
+            if (fileArrListFiles == null) {
+                result = new String[0];
+            } else {
+                String[] strArr = new String[fileArrListFiles.length];
+                for (int i = 0; i < fileArrListFiles.length; i++) {
+                    strArr[i] = fileArrListFiles[i].getName();
+                }
+                result = strArr;
+            }
+        }
+        put(key, result);
+        return result;
+    }
+
+
+
     public static boolean exists(File file) {
-        return isRootPath() ? Root.exists(file.getAbsolutePath()) : file.exists();
+        String key = "ex:" + file.getAbsolutePath();
+        if (fresh(key)) {
+            Object v = cached(key);
+            if (v instanceof Boolean) {
+                return ((Boolean) v).booleanValue();
+            }
+        }
+        boolean result = isRootPath() ? Root.exists(file.getAbsolutePath()) : file.exists();
+        put(key, Boolean.valueOf(result));
+        return result;
     }
 
     public static long size(File file) {
+        if (isRootPath() && file != null && file.getAbsolutePath().equals(gameDir().getAbsolutePath())) {
+            return probe().size;
+        }
+        String key = "sz:" + file.getAbsolutePath();
+        if (fresh(key)) {
+            Object v = cached(key);
+            if (v instanceof Long) {
+                return ((Long) v).longValue();
+            }
+        }
+        long result = size0(file);
+        put(key, Long.valueOf(result));
+        return result;
+    }
+
+    private static long size0(File file) {
         if (isRootPath()) {
             try {
                 String[] strArrSplit = Root.execNs("/system/bin/du -sb " + q(file.getAbsolutePath()) + " 2>/dev/null").trim().split("\\s+");
@@ -405,28 +650,71 @@ public class Core {
         return j < 1024 ? j + " B" : j < 1048576 ? String.format("%.1f KB", Double.valueOf(j / 1024.0d)) : j < 1073741824 ? String.format("%.1f MB", Double.valueOf(j / 1048576.0d)) : String.format("%.2f GB", Double.valueOf(j / 1.073741824E9d));
     }
 
+    private static boolean hasDllUnder(String dir) {
+        String prefix = dir.endsWith("/") ? dir : dir + "/";
+        Probe pb = probe();
+        for (int i = 0; i < pb.dlls.length; i++) {
+            if (pb.dlls[i].startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isDllBase(String base) {
+        String lower = base.toLowerCase();
+        if (lower.endsWith(".dll")) {
+            lower = lower.substring(0, lower.length() - 4);
+        }
+        String[] docs = {".txt", ".md", ".json", ".ini", ".log", ".png", ".jpg", ".jpeg", ".exe", ".zip", ".rar", ".7z", ".config", ".xml", ".pdf"};
+        for (int i = 0; i < docs.length; i++) {
+            if (lower.endsWith(docs[i]) || lower.contains(docs[i] + ".")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static List<Mod> scanMods() {
         ArrayList arrayList = new ArrayList();
         File filePluginsDir = pluginsDir();
-        for (String str : ls(filePluginsDir)) {
+        String[] pluginNames;
+        if (isRootPath() && filePluginsDir.getAbsolutePath().equals(new File(gameDir(), "BepInEx/plugins").getAbsolutePath())) {
+            pluginNames = probe().plugins;
+        } else {
+            pluginNames = ls(filePluginsDir);
+        }
+        for (String strRaw : pluginNames) {
+            boolean entryIsDir = strRaw.endsWith("/");
+            String str = entryIsDir ? strRaw.substring(0, strRaw.length() - 1) : strRaw;
             File file = new File(filePluginsDir, str);
             if (!str.startsWith(".")) {
                 Mod mod = new Mod();
                 mod.isDir = file.isDirectory();
                 if (str.endsWith(".dll.disabled")) {
+                    String base = str.substring(0, str.length() - ".dll.disabled".length());
+                    if (!isDllBase(base)) {
+                        continue;
+                    }
                     mod.enabled = false;
-                    mod.name = str.substring(0, str.length() - ".dll.disabled".length());
+                    mod.name = base;
                 } else if (str.endsWith(".disabled")) {
+                    String base = str.substring(0, str.length() - ".disabled".length());
+                    if (!isDllBase(base)) {
+                        continue;
+                    }
                     mod.enabled = false;
-                    mod.name = str.substring(0, str.length() - ".disabled".length());
+                    mod.name = base;
                 } else {
                     boolean z = true;
                     if (str.endsWith(".dll")) {
                         mod.enabled = true;
                         mod.name = str.substring(0, str.length() - 4);
-                    } else if (file.isDirectory() || (isRootPath() && str.indexOf(".") < 0)) {
+                    } else if (file.isDirectory() || entryIsDir) {
                         mod.isDir = true;
-                        if (!isRootPath() && !hasEnabledDll(file) && hasAnyDll(file)) {
+                        if (isRootPath()) {
+                            z = hasDllUnder(file.getAbsolutePath());
+                        } else if (!hasEnabledDll(file) && hasAnyDll(file)) {
                             z = false;
                         }
                         mod.enabled = z;
@@ -507,6 +795,7 @@ public class Core {
     }
 
     public static boolean toggleMod(Mod mod) {
+        invalidate();
         try {
             boolean z = !mod.enabled;
             if (mod.isDir) {
