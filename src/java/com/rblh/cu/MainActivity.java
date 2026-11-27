@@ -70,10 +70,10 @@ public class MainActivity extends Activity {
     private static final String INTRO_ENC = "penhj8+d1ImAxsHug8bdqOL/2oSL2Z/jht7OkMHil6Kb1o2Yi9/zpeH7j8aL1bSzxsHbhcP3R22Urpzai4yL2dCnzcCC97PYnI7EwMOA18yi2/7Wia3Sm+KH48Kd49+XlqbWioOM4uRJncbCl5+o16qLiMXnq/LngN2T1qaPxef0g+fjqdvS2pG+0pvVjdrPnfnElomL2rGJh9b5oPXPbXjUrJ7TlMqH4/SR9uKVppjWjK2K7+mm/+SC3LvYkbPH1+yPxviq2tzRsLA8y9LNgvjDqu761K2x0579h+jckfD7mrK1Et6oyoX//pH2w5W5oBLQqu+E+sqWzeV4ONi5k8fSwoDb2qnc6tqEi96t2IfY1JPRy5qPn9aNlYj44qzJwY/dhdeZvcbi0Y/D9avLzNeJhNKb0YTs5pbN5Q==";
     private static final int REQ_BEP_ZIP = 1002;
     private static final int REQ_EXPORT = 1007;
-    private static final int REQ_GAME_ZIP = 1001;
     private static final int REQ_IMPORT_SAVE = 1006;
     private static final int REQ_LANG_ZIP = 1004;
     private static final int REQ_MOD_ZIP = 1003;
+    private static final int REQ_GAME_DIR = 9203;
     private static final int REQ_RESTORE = 1005;
     private static final String URL_AFDIAN_ENC = "KwE5FwEIHx1XRQsLBy1bLggfHVEdREEDClRxTHheSgMIBAA=";
     private static final String URL_AUTHOR_ENC = "KwE5FwEIHx1UEVxMEjVaPgYHVWkGUg==";
@@ -87,13 +87,9 @@ public class MainActivity extends Activity {
     private boolean wantBep = false;
     private int curTab = 0;
     private boolean bepPromptShown = false;
+    private boolean inInstall = false;
     private boolean pendingPermRefresh = false;
-    private File srcFile = null;
-    private Uri srcUri = null;
-    private String srcAsset = null;
     private int selWinlator = 0;
-    private HighlightList wlList = null;
-    private final List<TextView> wlRadios = new ArrayList();
     private File pendingExport = null;
 
     private void handleIncoming(Intent intent) {
@@ -282,28 +278,28 @@ public class MainActivity extends Activity {
     }
 
     public void showInstall() {
-        String str;
+        this.inInstall = true;
+        boolean hasGame = Core.hasGame();
         LinearLayout linearLayoutColumn = Ui.column(this);
         linearLayoutColumn.addView(header("安 装 游 戏"));
-        LinearLayout linearLayoutCard = Ui.card(this);
-        linearLayoutCard.addView(Ui.cardHeader(this, "Casualties Unknown Demo", "游戏本体需要你自己准备。\n压缩包会解压到 /storage/emulated/0/Download/ 下。"));
-        boolean zHasGame = Core.hasGame();
-        if (zHasGame) {
-            str = "状态：✅ 已在所选目录找到游戏\n无需重新安装，直接点下面的「下一步」即可";
-        } else {
-            str = "状态：尚未安装\n\n本安装器不包含游戏本体。请自备游戏压缩包：放进 /Download/，或点下面的「安装」手动选择。将解压到：\n" + Core.gameDir().getAbsolutePath() + "\n\n已经装在别处了？点「已安装游戏？」选择你现有的目录。";
-        }
-        linearLayoutCard.addView(Ui.desc(this, str));
-        CheckBox checkBox = new CheckBox(this);
-        checkBox.setText("游戏本体（需自备）");
-        checkBox.setChecked(true);
-        checkBox.setEnabled(false);
-        checkBox.setTextColor(Ui.SUB);
-        linearLayoutCard.addView(checkBox);
-        linearLayoutColumn.addView(linearLayoutCard);
-        LinearLayout linearLayoutCard2 = Ui.card(this);
-        linearLayoutCard2.addView(Ui.cardHeader(this, "BepInEx", "安装模组必需的前置框架。\n不装只能玩原版，装了才能加载 MOD。"));
-        linearLayoutCard2.addView(Ui.desc(this, "状态：" + (Core.hasBepInEx() ? "✅ 已安装" : "未安装")));
+
+        LinearLayout card = Ui.card(this);
+        card.addView(Ui.cardHeader(this, "游戏目录", "管理器不负责解压游戏。\n请先自己把游戏解压到手机存储（例如 /Download/），再用下面的按钮选择那个文件夹。"));
+        card.addView(Ui.desc(this, "状态：" + (hasGame ? "✅ 已找到 CasualtiesUnknown.exe" : "尚未找到游戏（还没选目录或目录不对）")
+                + "\n当前目录：" + Core.gameDir().getAbsolutePath()));
+        Button buttonPick = Ui.btn(this, "选择游戏目录", Theme.accentDark());
+        buttonPick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.chooseGameDir();
+            }
+        });
+        card.addView(buttonPick);
+        linearLayoutColumn.addView(card);
+
+        LinearLayout bepCard = Ui.card(this);
+        bepCard.addView(Ui.cardHeader(this, "BepInEx", "安装模组必需的前置框架。\n不装只能玩原版，装了才能加载 MOD。"));
+        bepCard.addView(Ui.desc(this, "状态：" + (Core.hasBepInEx() ? "✅ 已安装" : "未安装")));
         final CheckBox checkBox2 = new CheckBox(this);
         checkBox2.setText("安装 BepInEx（可选）");
         checkBox2.setChecked(this.wantBep);
@@ -314,76 +310,118 @@ public class MainActivity extends Activity {
                 MainActivity.this.wantBep = checkBox2.isChecked();
             }
         });
-        linearLayoutCard2.addView(checkBox2);
-        linearLayoutColumn.addView(linearLayoutCard2);
-        Button buttonBtn = Ui.btn(this, "已安装游戏？", Ui.CARD2);
-        buttonBtn.setOnClickListener(new View.OnClickListener() {
+        bepCard.addView(checkBox2);
+        linearLayoutColumn.addView(bepCard);
+
+        Button buttonNext = Ui.btn(this, hasGame ? "下一步  →" : "选择目录后继续", Theme.accentDark());
+        buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.this.showGameDirDialog(null, false);
-            }
-        });
-        linearLayoutColumn.addView(buttonBtn);
-        Button buttonBtn2 = Ui.btn(this, zHasGame ? "下一步  →" : "安装", Theme.accentDark());
-        buttonBtn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean zHasGame2 = Core.hasGame();
-                MainActivity mainActivity = MainActivity.this;
-                if (zHasGame2) {
-                    mainActivity.showWinlator();
+                if (!Core.hasGame()) {
+                    Ui.alert(MainActivity.this, "还没选择游戏目录", "请先把游戏解压到手机存储，再点上面的「选择游戏目录」，选中 CasualtiesUnknown.exe 所在的那一层文件夹。");
+                    return;
+                }
+                if (MainActivity.this.wantBep && !Core.hasBepInEx()) {
+                    MainActivity.this.afterGame();
                 } else {
-                    mainActivity.startGameInstall();
+                    MainActivity.this.finishInstall();
                 }
             }
         });
-        linearLayoutColumn.addView(buttonBtn2);
-        Button buttonBtn3 = Ui.btn(this, "跳过", Ui.CARD2);
-        buttonBtn3.setOnClickListener(new View.OnClickListener() {
+        linearLayoutColumn.addView(buttonNext);
+
+        Button buttonSkip = Ui.btn(this, "跳过", Ui.CARD2);
+        buttonSkip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装游戏文件，之后需要手动把游戏文件夹放到 /Download/ 里，否则无法游戏。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
+                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("跳过后不会安装任何东西，之后需要自己把游戏解压好，再到「安装游戏」里选择目录。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        MainActivity.this.showWinlator();
+                        MainActivity.this.finishInstall();
                     }
-                }).setNegativeButton("返回安装", (DialogInterface.OnClickListener) null).show();
+                }).setNegativeButton("返回", (DialogInterface.OnClickListener) null).show();
             }
         });
-        linearLayoutColumn.addView(buttonBtn3);
+        linearLayoutColumn.addView(buttonSkip);
         setPage(Ui.scroll(this, linearLayoutColumn));
     }
 
-    public void startGameInstall() {
-        if (!hasAllFiles()) {
-            askAllFiles();
-            return;
-        }
-        if (hasAsset("game.zip")) {
-            this.srcAsset = "game.zip";
-            this.srcFile = null;
-            this.srcUri = null;
-            deployGame();
-            return;
-        }
-        File fileFindPackage = Core.findPackage(Core.GAME_ZIP_NAMES);
-        if (fileFindPackage == null) {
-            promptPick(REQ_GAME_ZIP, "没有找到游戏压缩包，请手动选择", "游戏本体压缩包");
-            return;
-        }
-        this.srcAsset = null;
-        this.srcFile = fileFindPackage;
-        this.srcUri = null;
-        deployGame();
+    private void finishInstall() {
+        this.sp.edit().putBoolean("setup_done", true).apply();
+        Ui.toast(this, "设置完成");
+        showMain(0);
     }
 
-    private void promptPick(final int i, String str, String str2) {
-        new AlertDialog.Builder(this).setTitle(str).setMessage("请把 " + str2 + " 下载到 /storage/emulated/0/Download/ 后重试，\n或者直接从手机里选一个 zip 文件。").setPositiveButton("选择文件", new DialogInterface.OnClickListener() {
+    public void pickGameDir() {
+        try {
+            Intent intent = new Intent("android.intent.action.OPEN_DOCUMENT_TREE");
+            intent.addFlags(1);
+            startActivityForResult(intent, REQ_GAME_DIR);
+        } catch (Throwable th) {
+            Ui.alert(this, "打不开目录选择器", String.valueOf(th));
+        }
+    }
+
+    public void chooseGameDir() {
+        Skin.modal(this, "修改游戏目录", new String[]{"用系统选择器选择", "手动输入路径"}, -1, new Skin.Picker() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i2) {
-                MainActivity.this.pickZip(i);
+            public void pick(int i) {
+                if (i == 0) {
+                    MainActivity.this.pickGameDir();
+                } else {
+                    MainActivity.this.inputGameDir();
+                }
             }
-        }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
+        });
+    }
+
+    public void inputGameDir() {
+        final EditText editText = new EditText(this);
+        editText.setText(Core.gameDir().getAbsolutePath());
+        editText.setSingleLine(false);
+        editText.setTextSize(13.0f);
+        int p = Ui.dp(this, 16.0f);
+        editText.setPadding(p, p, p, p);
+        new AlertDialog.Builder(this)
+                .setTitle("输入游戏目录")
+                .setMessage("填写 CasualtiesUnknown.exe 所在文件夹的完整路径。\n用于系统选择器点不到的地方（例如 /data/ 下的目录）。")
+                .setView(editText)
+                .setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String path = editText.getText().toString().trim();
+                        if (path.length() == 0) {
+                            Ui.alert(MainActivity.this, "路径为空", "请填写完整路径，例如：\n/storage/emulated/0/Download/Casualties Unknown");
+                            return;
+                        }
+                        if (!path.startsWith("/")) {
+                            Ui.alert(MainActivity.this, "路径无效", "请填写以 / 开头的完整路径。");
+                            return;
+                        }
+                        boolean root = path.startsWith("/data/");
+                        File f = new File(path);
+                        if (!(root ? Root.exists(path) : f.exists())) {
+                            if (root) {
+                                Ui.alert(MainActivity.this, "找不到目录", "找不到这个位置，请检查路径是否正确。");
+                                return;
+                            }
+                            if (!f.mkdirs()) {
+                                Ui.alert(MainActivity.this, "无法创建目录", "该路径无法创建，请检查父目录是否存在、是否有写入权限。");
+                                return;
+                            }
+                        }
+                        Core.setCustomDir(MainActivity.this, path);
+                        Core.invalidate();
+                        Ui.toast(MainActivity.this, "已保存：" + Core.gameDir().getAbsolutePath());
+                        if (MainActivity.this.inInstall) {
+                            MainActivity.this.showInstall();
+                        } else {
+                            MainActivity.this.showMain(MainActivity.this.curTab);
+                        }
+                    }
+                })
+                .setNegativeButton("取消", (DialogInterface.OnClickListener) null)
+                .show();
     }
 
     public void pickZip(int i) {
@@ -395,20 +433,6 @@ public class MainActivity extends Activity {
         } catch (Throwable th) {
             Ui.alert(this, "无法打开文件选择器", String.valueOf(th));
         }
-    }
-
-    public InputStream openSrc() throws IOException {
-        if (this.srcAsset != null) {
-            return getAssets().open(this.srcAsset);
-        }
-        if (this.srcFile != null) {
-            return new FileInputStream(this.srcFile);
-        }
-        InputStream inputStreamOpenInputStream = getContentResolver().openInputStream(this.srcUri);
-        if (inputStreamOpenInputStream == null) {
-            throw new IOException("无法读取文件");
-        }
-        return inputStreamOpenInputStream;
     }
 
     private boolean hasAsset(String str) {
@@ -428,112 +452,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void deployGame() {
-        View[] viewArrBuildProgressOverlay = buildProgressOverlay("正在解压游戏…");
-        this.shell.addView(viewArrBuildProgressOverlay[0], new FrameLayout.LayoutParams(-1, -1));
-        TextView textView = (TextView) viewArrBuildProgressOverlay[1];
-        ((ProgressBar) viewArrBuildProgressOverlay[2]).setIndeterminate(true);
-        new Thread(new AnonymousClass12(Core.gameDir(), textView, viewArrBuildProgressOverlay)).start();
-    }
-
-    
-    class AnonymousClass12 implements Runnable {
-        final /* synthetic */ File val$dest;
-        final /* synthetic */ View[] val$overlay;
-        final /* synthetic */ TextView val$ptxt;
-
-        AnonymousClass12(File file, TextView textView, View[] viewArr) {
-            this.val$dest = file;
-            this.val$ptxt = textView;
-            this.val$overlay = viewArr;
-        }
-
-        @Override
-        public void run() {
-            InputStream inputStream = null;
-            try {
-                try {
-                    this.val$dest.mkdirs();
-                    InputStream inputStreamOpenSrc = MainActivity.this.openSrc();
-                    try {
-                        final String strDetectSingleTopDir = Installer.detectSingleTopDir(inputStreamOpenSrc);
-                        try {
-                            inputStreamOpenSrc.close();
-                        } catch (Throwable th) {
-                        }
-                        InputStream inputStreamOpenSrc2 = MainActivity.this.openSrc();
-                        final long[] jArr = {0};
-                        Installer.unzip(inputStreamOpenSrc2, this.val$dest, strDetectSingleTopDir, new Installer.Progress() {
-                            @Override
-                            public void onProgress(long j, String str) {
-                                String str2;
-                                long jCurrentTimeMillis = System.currentTimeMillis();
-                                if (jCurrentTimeMillis - jArr[0] > 300) {
-                                    jArr[0] = jCurrentTimeMillis;
-                                    if (strDetectSingleTopDir == null || strDetectSingleTopDir.length() > 0) {
-                                        str2 = "已解压 " + Core.human(j) + "\n" + str;
-                                    } else {
-                                        str2 = "已解压 " + Core.human(j) + "\n" + str;
-                                    }
-                                    MainActivity.this.ui.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            AnonymousClass12.this.val$ptxt.setText(str2);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        MainActivity.this.ui.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                MainActivity.this.afterGame();
-                            }
-                        });
-                        if (inputStreamOpenSrc2 != null) {
-                            inputStreamOpenSrc2.close();
-                        }
-                    } catch (Throwable th2) {
-                        try {
-                            inputStreamOpenSrc.close();
-                        } catch (Throwable th3) {
-                        }
-                        throw th2;
-                    }
-                } catch (Throwable th4) {
-                }
-            } catch (Throwable th5) {
-                try {
-                    Log.e("CUImport", "deploy failed: " + th5, th5);
-                    MainActivity.this.ui.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            MainActivity.this.shell.removeView(AnonymousClass12.this.val$overlay[0]);
-                            Ui.alert(MainActivity.this, "解压失败", String.valueOf(th5));
-                        }
-                    });
-                    if (0 != 0) {
-                        inputStream.close();
-                    }
-                } catch (Throwable th6) {
-                    if (0 != 0) {
-                        try {
-                            inputStream.close();
-                        } catch (Throwable th7) {
-                        }
-                    }
-                    throw new RuntimeException(th6);
-                }
-            }
-        }
-    }
-
     public void afterGame() {
         if (this.wantBep) {
             if (hasAsset("bepinex.zip")) {
                 try {
                     Installer.installBepInEx(getAssets().open("bepinex.zip"), null);
-                    showWinlator();
+                    finishInstall();
                     return;
                 } catch (Throwable th) {
                     Log.e("CUImport", "bepinex asset failed", th);
@@ -541,7 +465,7 @@ public class MainActivity extends Activity {
             }
             File fileFindPackage = Core.findPackage(Core.BEPINEX_ZIP_NAMES);
             if (fileFindPackage == null) {
-                showWinlator();
+                finishInstall();
                 Ui.alert(this, "BepInEx 未找到", "请把 BepInEx.zip 放到 /Download/ 后，在「模组」页面重新导入。");
                 return;
             } else {
@@ -549,7 +473,7 @@ public class MainActivity extends Activity {
                 return;
             }
         }
-        showWinlator();
+        finishInstall();
     }
 
     private void deployBep(final File file) {
@@ -568,7 +492,7 @@ public class MainActivity extends Activity {
                     MainActivity.this.ui.post(new Runnable() {
                         @Override
                         public void run() {
-                            MainActivity.this.showWinlator();
+                            MainActivity.this.finishInstall();
                         }
                     });
                 } catch (Throwable th) {
@@ -582,92 +506,6 @@ public class MainActivity extends Activity {
                 }
             }
         }).start();
-    }
-
-    public void showWinlator() {
-        showWinlator(true);
-    }
-
-    private void showWinlator(boolean z) {
-        LinearLayout linearLayoutColumn = Ui.column(this);
-        linearLayoutColumn.addView(header("选 择 运 行 环 境"));
-        linearLayoutColumn.addView(Ui.desc(this, "游戏需要 Winlator 才能在手机上运行。请选择一项，然后点底部「安装」："));
-        String[][] strArr = {new String[]{"Bionic Hub", "基于 Winlator 的优化分支，使用安兔兔包名，性能表现更好。推荐。"}, new String[]{"Winlator CN", "原版 Winlator 汉化版，兼容性更保守。"}, new String[]{"盖世游戏", "会自动根据设备进行配置，推荐小白使用。"}};
-        this.wlRadios.clear();
-        this.wlList = new HighlightList(this, Ui.dp(this, 20.0f), Ui.dp(this, 2.0f));
-        for (int i = 0; i < 3; i++) {
-            LinearLayout linearLayoutCard = Ui.card(this);
-            LinearLayout linearLayout = new LinearLayout(this);
-            linearLayout.setOrientation(0);
-            linearLayout.setGravity(16);
-            TextView textViewTv = Ui.tv(this, "○", 20.0f, Ui.SUB);
-            textViewTv.setPadding(0, 0, Ui.dp(this, 12.0f), 0);
-            textViewTv.setGravity(17);
-            textViewTv.setMinWidth(Ui.dp(this, 26.0f));
-            linearLayout.addView(textViewTv);
-            this.wlRadios.add(textViewTv);
-            TextView textViewTv2 = Ui.tv(this, strArr[i][0], 17.0f, Ui.TEXT);
-            textViewTv2.setTypeface(Typeface.DEFAULT_BOLD);
-            linearLayout.addView(textViewTv2, new LinearLayout.LayoutParams(0, -2, 1.0f));
-            linearLayoutCard.addView(linearLayout);
-            linearLayoutCard.addView(Ui.desc(this, strArr[i][1] + (installedPkg(i) != null ? "\n状态：✅ 已安装（点「下一步」继续）" : "\n状态：未安装")));
-            final int si = i;
-            linearLayoutCard.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (MainActivity.this.selWinlator == si) {
-                        return;
-                    }
-                    MainActivity.this.selWinlator = si;
-                    MainActivity.this.paintRadios(si);
-                    MainActivity.this.wlList.animateTo(si, null);
-                }
-            });
-            this.wlList.addView(linearLayoutCard);
-        }
-        linearLayoutColumn.addView(this.wlList);
-        Button buttonBtn = Ui.btn(this, installedPkg(this.selWinlator) != null ? "下一步  →" : "安  装", Theme.accentDark());
-        buttonBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity.this.chooseWinlator(MainActivity.this.selWinlator);
-            }
-        });
-        linearLayoutColumn.addView(buttonBtn);
-        Button buttonBtn2 = Ui.btn(this, "跳过", Ui.CARD2);
-        buttonBtn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("确认跳过？").setMessage("没有 Winlator 就无法运行游戏。\n跳过后可以随时在「设置」里再装。").setPositiveButton("仍要跳过", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i2) {
-                        MainActivity.this.sp.edit().putBoolean("setup_done", true).apply();
-                        MainActivity.this.showMain(0);
-                    }
-                }).setNegativeButton("返回", (DialogInterface.OnClickListener) null).show();
-            }
-        });
-        linearLayoutColumn.addView(buttonBtn2);
-        paintRadios(this.selWinlator);
-        final int i2 = this.selWinlator;
-        this.wlList.post(new Runnable() {
-            @Override
-            public void run() {
-                MainActivity.this.wlList.snapTo(i2);
-            }
-        });
-        setPage(Ui.scroll(this, linearLayoutColumn), z);
-    }
-
-    public void paintRadios(int i) {
-        int i2 = 0;
-        while (i2 < this.wlRadios.size()) {
-            TextView textView = this.wlRadios.get(i2);
-            boolean z = i2 == i;
-            textView.setText(z ? "●" : "○");
-            textView.setTextColor(z ? Theme.accent() : Ui.SUB);
-            i2++;
-        }
     }
 
     private void installCrashHandler() {
@@ -2294,7 +2132,7 @@ public class MainActivity extends Activity {
             new AlertDialog.Builder(this).setTitle("还没有安装 Winlator").setMessage("游戏需要 Winlator 才能运行。\n要现在去安装吗？").setPositiveButton("去安装", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i2) {
-                    MainActivity.this.showWinlator();
+                    MainActivity.this.finishInstall();
                 }
             }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
             return;
@@ -2388,6 +2226,7 @@ public class MainActivity extends Activity {
     }
 
     public void showMain(int i) {
+        this.inInstall = false;
         View viewTabLang;
         if (i != 1) {
             this.bepPromptShown = false;
@@ -2494,11 +2333,11 @@ public class MainActivity extends Activity {
         int __mods = Core.scanMods().size();
         linearLayoutCard.addView(Ui.desc(this, "安装状态：" + (zHasGame ? "准备就绪" : "数据缺失") + "\n占用空间：" + (size > 0 ? Core.human(size) : "—") + "\n已装模组：" + __mods + " 个\n路径：" + Core.gameDir().getAbsolutePath()));
         if (!zHasGame) {
-            Button buttonSmallBtn = Ui.smallBtn(this, "重新安装", iAccentDark);
+            Button buttonSmallBtn = Ui.smallBtn(this, "选择游戏目录", iAccentDark);
             buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainActivity.this.showInstall();
+                    MainActivity.this.chooseGameDir();
                 }
             });
             linearLayoutCard.addView(buttonSmallBtn);
@@ -2949,7 +2788,7 @@ public class MainActivity extends Activity {
         buttonSmallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.this.showGameDirDialog(textViewTv, true);
+                MainActivity.this.chooseGameDir();
             }
         });
         linearLayout.addView(buttonSmallBtn);
@@ -3145,65 +2984,6 @@ public class MainActivity extends Activity {
         linearLayout.addView(linearLayout2);
     }
 
-    public void showGameDirDialog(final TextView textView, final boolean z) {
-        final EditText editText = new EditText(this);
-        editText.setText(Core.gameDir().getAbsolutePath());
-        editText.setSingleLine(false);
-        editText.setTextSize(13.0f);
-        int iDp = Ui.dp(this, 16.0f);
-        editText.setPadding(iDp, iDp, iDp, iDp);
-        new AlertDialog.Builder(this).setTitle("修改游戏目录").setMessage("输入游戏所在文件夹的完整路径。\n留空则恢复默认。").setView(editText).setPositiveButton("保存", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String strTrim = editText.getText().toString().trim();
-                if (strTrim.length() == 0) {
-                    Core.setCustomDir(MainActivity.this, null);
-                } else {
-                    if (!strTrim.startsWith("/")) {
-                        Ui.alert(MainActivity.this, "路径无效", "请填写以 / 开头的完整路径，例如：\n/storage/emulated/0/Download/Casualties Unknown_7.0.1Demo");
-                        return;
-                    }
-                    File file = new File(strTrim);
-                    boolean zStartsWith = strTrim.startsWith("/data/");
-                    if (!(zStartsWith ? Root.exists(strTrim) : file.exists())) {
-                        if (zStartsWith) {
-                            Ui.alert(MainActivity.this, "找不到目录", "找不到这个位置，请检查路径是否正确。");
-                            return;
-                        } else if (!file.mkdirs()) {
-                            Ui.alert(MainActivity.this, "无法创建目录", "该路径无法创建，请检查父目录是否存在、是否有写入权限。");
-                            return;
-                        }
-                    }
-                    Core.setCustomDir(MainActivity.this, strTrim);
-                }
-                if (textView != null) {
-                    textView.setText(Core.gameDir().getAbsolutePath());
-                    textView.setTextColor(Ui.SUB);
-                }
-                Ui.toast(MainActivity.this, "已保存");
-                boolean z2 = z;
-                MainActivity mainActivity = MainActivity.this;
-                if (z2) {
-                    mainActivity.showMain(3);
-                } else {
-                    mainActivity.showInstall();
-                }
-            }
-        }).setNeutralButton("用默认", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Core.setCustomDir(MainActivity.this, null);
-                Ui.toast(MainActivity.this, "已恢复默认目录");
-                boolean z2 = z;
-                MainActivity mainActivity = MainActivity.this;
-                if (z2) {
-                    mainActivity.showMain(3);
-                } else {
-                    mainActivity.showInstall();
-                }
-            }
-        }).setNegativeButton("取消", (DialogInterface.OnClickListener) null).show();
-    }
 
     private String appVersion() {
         try {
@@ -3297,20 +3077,32 @@ public class MainActivity extends Activity {
             Instances.onResult(this, i, i2, intent);
             return;
         }
+        if (i == REQ_GAME_DIR) {
+            if (i2 != -1 || intent == null || intent.getData() == null) {
+                return;
+            }
+            String path = Instances.treePath(intent.getData());
+            if (path == null) {
+                Ui.toast(this, "无法识别这个目录");
+                return;
+            }
+            File picked = Instances.findGame(new File(path));
+            String dir = picked != null ? picked.getAbsolutePath() : path;
+            Core.setCustomDir(this, dir);
+            Core.invalidate();
+            Ui.toast(this, picked != null ? "已选择：" + dir : "已设为游戏目录（没找到 CasualtiesUnknown.exe）");
+            if (this.inInstall) {
+                showInstall();
+            } else {
+                showMain(this.curTab);
+            }
+            return;
+        }
         if (i2 != -1 || intent == null || intent.getData() == null) {
             return;
         }
         Uri data = intent.getData();
         try {
-            if (i == REQ_GAME_ZIP) {
-                if (hasAllFiles()) {
-                    deployFromUri(data);
-                    return;
-                } else {
-                    askAllFiles();
-                    return;
-                }
-            }
             if (i == REQ_BEP_ZIP) {
                 deployBepFromUri(data);
                 return;
@@ -3354,12 +3146,6 @@ public class MainActivity extends Activity {
         } catch (Throwable th2) {
             Ui.alert(this, "导入失败", String.valueOf(th2));
         }
-    }
-
-    private void deployFromUri(Uri uri) {
-        this.srcUri = uri;
-        this.srcFile = null;
-        deployGame();
     }
 
     private void deployBepFromUri(final Uri uri) {

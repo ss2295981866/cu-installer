@@ -31,7 +31,7 @@ public class Instances {
     public static void attach(final Activity activity, LinearLayout linearLayout) {
         try {
             LinearLayout linearLayoutCard = Ui.card(activity);
-            linearLayoutCard.addView(Ui.cardHeader(activity, "游戏实例", "切换实例、选择已有目录或安装新游戏。"));
+            linearLayoutCard.addView(Ui.cardHeader(activity, "游戏实例", "切换实例或选择已有游戏目录。"));
             linearLayoutCard.addView(Ui.desc(activity, summary()));
             linearLayoutCard.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -115,7 +115,7 @@ public class Instances {
     static void manage(final Activity activity) {
         final List<File> listScan = scan();
         int iActiveIndex = activeIndex(listScan);
-        String[] strArr = new String[listScan.size() + 2];
+        String[] strArr = new String[listScan.size() + 1];
         int i = 0;
         while (i < listScan.size()) {
             StringBuilder sb = new StringBuilder();
@@ -125,19 +125,14 @@ public class Instances {
             i++;
         }
         strArr[listScan.size()] = "＋ 选择游戏目录…";
-        strArr[listScan.size() + 1] = "＋ 安装新游戏…";
         Skin.modal(activity, "游戏实例", strArr, -1, new Skin.Picker() {
             @Override
             public void pick(int i2) {
                 if (i2 != listScan.size()) {
-                    if (i2 != listScan.size() + 1) {
-                        if (i2 < 0 || i2 >= listScan.size()) {
-                            return;
-                        }
-                        Instances.switchTo(activity, (File) listScan.get(i2));
+                    if (i2 < 0 || i2 >= listScan.size()) {
                         return;
                     }
-                    Instances.pickArchive(activity);
+                    Instances.switchTo(activity, (File) listScan.get(i2));
                     return;
                 }
                 Instances.pickDir(activity);
