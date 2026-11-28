@@ -88,6 +88,11 @@ public class MainActivity extends Activity {
     private int curTab = 0;
     private boolean bepPromptShown = false;
     private boolean inInstall = false;
+    private java.util.List<Online.Item> onlineAll = new java.util.ArrayList<Online.Item>();
+    private java.util.Map<String, Integer> onlineHits = new java.util.HashMap<String, Integer>();
+    private String onlineQuery = "";
+    private String onlineCompat = "";
+    private boolean onlineSortHits = false;
     private boolean pendingPermRefresh = false;
     private int selWinlator = 0;
     private File pendingExport = null;
@@ -2543,6 +2548,296 @@ public class MainActivity extends Activity {
         }).start();
     }
 
+    public void showOnline() {
+        LinearLayout column = Ui.column(this);
+        column.addView(header("在 线 模 组"));
+
+        LinearLayout top = Ui.card(this);
+        top.addView(Ui.cardHeader(this, "社区索引", "来自 rblh.cn 的公开索引，下载后自动装进 BepInEx/plugins。"));
+        final TextView status = Ui.tv(this, "正在加载…", 13.0f, Ui.SUB);
+        top.addView(status);
+        LinearLayout actions = new LinearLayout(this);
+        actions.setOrientation(0);
+        Button refresh = Ui.smallBtn(this, "刷新", Ui.CARD2);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.showOnline();
+            }
+        });
+        Button submit = Ui.smallBtn(this, "投稿模组", Ui.CARD2);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.openUrl("https://rblh.cn/cu/submit");
+            }
+        });
+        Button back = Ui.smallBtn(this, "← 返回模组页", Ui.CARD2);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.showMain(1);
+            }
+        });
+        actions.addView(refresh);
+        actions.addView(submit);
+        actions.addView(back);
+        top.addView(actions);
+        column.addView(top);
+
+        EditText search = new EditText(this);
+        search.setHint("搜索名称 / 作者 / 简介");
+        search.setSingleLine(true);
+        search.setTextSize(14.0f);
+        search.setTextColor(Ui.TEXT);
+        search.setHintTextColor(Ui.SUB);
+        search.setBackground(Ui.round(Ui.CARD, Ui.dp(this, 12.0f)));
+        int sp = Ui.dp(this, 14.0f);
+        search.setPadding(sp, Ui.dp(this, 10.0f), sp, Ui.dp(this, 10.0f));
+        column.addView(search);
+
+        final String[] chipLabels = {"全部", "正式版", "试玩版", "待确认"};
+        final String[] chipValues = {"", "release", "demo", "unknown"};
+        final java.util.List<TextView> chipViews = new java.util.ArrayList<TextView>();
+        final LinearLayout chips = new LinearLayout(this);
+        chips.setOrientation(0);
+        for (int i = 0; i < chipLabels.length; i++) {
+            final int idx = i;
+            final TextView chip = new TextView(this);
+            chip.setText(chipLabels[i]);
+            chip.setTextSize(13.0f);
+            chip.setGravity(17);
+            chip.setPadding(0, Ui.dp(this, 8.0f), 0, Ui.dp(this, 8.0f));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -2, 1.0f);
+            lp.setMargins(Ui.dp(this, 4.0f), 0, Ui.dp(this, 4.0f), 0);
+            chip.setLayoutParams(lp);
+            chip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    MainActivity.this.onlineCompat = chipValues[idx];
+                    MainActivity.this.paintChips(chipViews, chipValues);
+                    MainActivity.this.renderOnline();
+                }
+            });
+            chipViews.add(chip);
+            chips.addView(chip);
+        }
+        column.addView(chips);
+
+        final Button sort = Ui.smallBtn(this, "排序：默认", Ui.CARD2);
+        sort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.onlineSortHits = !MainActivity.this.onlineSortHits;
+                sort.setText(MainActivity.this.onlineSortHits ? "排序：下载量" : "排序：默认");
+                MainActivity.this.renderOnline();
+            }
+        });
+        column.addView(sort);
+
+        final LinearLayout listBox = Ui.column(this);
+        column.addView(listBox);
+        this.onlineListBox = listBox;
+        this.onlineStatus = status;
+        this.onlineChips = chipViews;
+        setPage(Ui.scroll(this, column));
+        paintChips(chipViews, chipValues);
+
+        search.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable e) {
+                MainActivity.this.onlineQuery = e.toString().trim().toLowerCase();
+                MainActivity.this.renderOnline();
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final java.util.List<Online.Item> items = Online.fetch(MainActivity.this, false);
+                    final java.util.Map<String, Integer> hits = Online.counts(MainActivity.this);
+                    ui.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            onlineAll = items;
+                            onlineHits = hits;
+                            renderOnline();
+                        }
+                    });
+                } catch (final Throwable th) {
+                    ui.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (onlineStatus != null) {
+                                onlineStatus.setText("加载失败：" + th);
+                            }
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    private LinearLayout onlineListBox;
+    private TextView onlineStatus;
+    private java.util.List<TextView> onlineChips;
+
+    private void paintChips(java.util.List<TextView> chips, String[] values) {
+        if (chips == null) {
+            return;
+        }
+        for (int i = 0; i < chips.size(); i++) {
+            boolean selected = values[i].equals(onlineCompat);
+            chips.get(i).setTextColor(selected ? 0xFFFFFFFF : Ui.SUB);
+            chips.get(i).setBackground(Ui.round(selected ? Theme.accent() : Ui.CARD2, Ui.dp(this, 15.0f)));
+        }
+    }
+
+    private void renderOnline() {
+        if (onlineListBox == null) {
+            return;
+        }
+        onlineListBox.removeAllViews();
+        java.util.List<Online.Item> out = new java.util.ArrayList<Online.Item>();
+        for (int i = 0; i < onlineAll.size(); i++) {
+            Online.Item it = onlineAll.get(i);
+            if (onlineQuery.length() > 0) {
+                String hay = (it.name + " " + it.author + " " + it.summary + " " + it.id).toLowerCase();
+                if (!hay.contains(onlineQuery)) {
+                    continue;
+                }
+            }
+            if (onlineCompat.length() > 0) {
+                boolean hit = false;
+                for (int k = 0; k < it.compat.size(); k++) {
+                    String c = it.compat.get(k).toLowerCase();
+                    if ("release".equals(onlineCompat) && c.equals("release")) {
+                        hit = true;
+                    } else if ("demo".equals(onlineCompat) && c.startsWith("demo")) {
+                        hit = true;
+                    } else if ("unknown".equals(onlineCompat) && c.equals("unknown")) {
+                        hit = true;
+                    }
+                }
+                if (!hit) {
+                    continue;
+                }
+            }
+            out.add(it);
+        }
+        if (onlineSortHits) {
+            java.util.Collections.sort(out, new java.util.Comparator<Online.Item>() {
+                @Override
+                public int compare(Online.Item a, Online.Item b) {
+                    int ha = onlineHits.containsKey(a.id) ? onlineHits.get(a.id) : 0;
+                    int hb = onlineHits.containsKey(b.id) ? onlineHits.get(b.id) : 0;
+                    if (ha != hb) {
+                        return hb - ha;
+                    }
+                    return 0;
+                }
+            });
+        }
+        if (onlineStatus != null) {
+            onlineStatus.setText("共 " + out.size() + " 个（总计 " + onlineAll.size() + "）");
+        }
+        if (out.isEmpty()) {
+            onlineListBox.addView(Ui.desc(this, "没有匹配的模组"));
+            return;
+        }
+        for (int i = 0; i < out.size(); i++) {
+            onlineListBox.addView(onlineCard(out.get(i), i));
+        }
+    }
+
+    private View onlineCard(final Online.Item item, int idx) {
+        LinearLayout card = Ui.card(this);
+        TextView title = Ui.tv(this, item.name, 16.0f, Ui.TEXT);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        card.addView(title);
+        String meta = (item.version != null && item.version.length() > 0 ? "v" + item.version : "")
+                + (item.author != null && item.author.length() > 0 ? "  ·  " + item.author : "")
+                + (item.size > 0 ? "  ·  " + Core.human(item.size) : "")
+                + (onlineHits.containsKey(item.id) ? "  ·  下载 " + onlineHits.get(item.id) : "");
+        if (meta.trim().length() > 0) {
+            card.addView(Ui.desc(this, meta.trim()));
+        }
+        if (item.summary != null && item.summary.length() > 0) {
+            card.addView(Ui.desc(this, item.summary));
+        }
+        String state = item.stateText();
+        if (state.length() > 0) {
+            TextView warn = Ui.tv(this, state, 12.0f, Ui.DANGER);
+            warn.setPadding(0, Ui.dp(this, 4.0f), 0, 0);
+            card.addView(warn);
+        }
+        String tags = item.tagText();
+        if (tags.length() > 0) {
+            TextView tagView = Ui.tv(this, tags, 12.0f, Theme.accent());
+            tagView.setPadding(0, Ui.dp(this, 6.0f), 0, Ui.dp(this, 6.0f));
+            card.addView(tagView);
+        }
+        final Button btn = Ui.smallBtn(this, "下载并安装", Theme.accentDark());
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btn.setEnabled(false);
+                final TextView msg = new TextView(MainActivity.this);
+                msg.setTextColor(0xFF222222);
+                msg.setTextSize(13.0f);
+                int p = Ui.dp(MainActivity.this, 18.0f);
+                msg.setPadding(p, p, p, p);
+                msg.setText("准备中…");
+                final AlertDialog dlg = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(item.name)
+                        .setView(msg)
+                        .setCancelable(false)
+                        .create();
+                dlg.show();
+                Online.install(MainActivity.this, item, new Online.Callback() {
+                    @Override
+                    public void progress(final String text) {
+                        ui.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                msg.setText(text);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void done(final boolean ok, final String text) {
+                        ui.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    dlg.dismiss();
+                                } catch (Throwable th) {
+                                }
+                                btn.setEnabled(true);
+                                Ui.toast(MainActivity.this, text);
+                                if (ok) {
+                                    showMain(1);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        card.addView(btn);
+        return card;
+    }
+
     private View tabMod() {
         float f;
         if (!Core.hasBepInEx()) {
@@ -2631,8 +2926,16 @@ public class MainActivity extends Activity {
         boolean needUpdate = installedBep == null || Tools.cmpVer(Tools.ver(installedBep), Tools.ver(Core.BEP_VERSION)) < 0;
         if (needUpdate) {
             linearLayoutUpdate.addView(buttonUpdate);
-            linearLayoutCard2.addView(linearLayoutUpdate);
         }
+        Button buttonOnline = Ui.smallBtn(this, "在线模组", Ui.CARD2);
+        buttonOnline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.showOnline();
+            }
+        });
+        linearLayoutUpdate.addView(buttonOnline);
+        linearLayoutCard2.addView(linearLayoutUpdate);
         linearLayoutColumn2.addView(linearLayoutCard2);
         final List<Core.Mod> listScanMods = Core.scanMods();
         int i2 = 3;
